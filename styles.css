@@ -6907,6 +6907,10 @@ a {
   font-style: normal;
 }
 
+.faq-hero h2 span {
+  display: inline;
+}
+
 .faq-hero-line {
   display: block;
   width: 91%;
@@ -10312,7 +10316,7 @@ a {
     min-height: 0;
     gap: 10px;
     width: calc(100% - 24px);
-    padding: 26px 18px 30px;
+    padding: 24px 16px 28px;
     margin-inline: auto;
     background-size: cover;
     text-align: center;
@@ -10334,15 +10338,15 @@ a {
   }
 
   .faq-hero-mark {
-    width: 102px;
-    height: 102px;
-    margin: 0 auto 4px;
+    width: 92px;
+    height: 92px;
+    margin: 0 auto 2px;
   }
 
   .faq-hero-pill {
     min-height: 44px;
     padding: 6px 20px 6px 6px;
-    margin: 0 auto 16px !important;
+    margin: 0 auto 14px !important;
     font-size: 1rem;
   }
 
@@ -10353,19 +10357,23 @@ a {
   }
 
   .faq-hero h2 {
-    max-width: 100%;
-    font-size: clamp(1.92rem, 7.5vw, 2.32rem);
-    line-height: 1.44;
+    max-width: 310px;
+    margin-inline: auto;
+    font-size: clamp(1.78rem, 7vw, 2.02rem);
+    line-height: 1.34;
     text-wrap: balance;
     white-space: normal;
     word-break: keep-all;
     overflow-wrap: anywhere;
-    text-wrap: balance;
+  }
+
+  .faq-hero h2 span {
+    display: block;
   }
 
   .faq-hero-line {
-    width: min(100%, 340px);
-    margin: 10px auto 8px;
+    width: min(100%, 300px);
+    margin: 8px auto 6px;
   }
 
   .faq-hero-copy > p:last-child {
@@ -10407,8 +10415,12 @@ a {
     grid-row: auto;
   }
 
-  .sample-heading h2,
-  .faq-hero h2 {
+  .sample-heading h2 {
     font-size: clamp(1.78rem, 8vw, 2.08rem);
+  }
+
+  .faq-hero h2 {
+    max-width: 290px;
+    font-size: clamp(1.62rem, 7.4vw, 1.86rem);
   }
 }
