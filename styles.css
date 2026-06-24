@@ -9159,7 +9159,7 @@ a {
 
   .difference-heading {
     margin-bottom: 24px;
-    text-align: left;
+    text-align: center;
   }
 
   .difference-eyebrow {
@@ -9168,8 +9168,13 @@ a {
   }
 
   .difference-heading h2 {
-    font-size: clamp(1.88rem, 7.3vw, 2.32rem);
-    line-height: 1.45;
+    font-size: clamp(1.72rem, 6.3vw, 2rem);
+    line-height: 1.55;
+    text-wrap: balance;
+  }
+
+  .difference-heading h2 > span {
+    display: inline;
   }
 
   .difference-heading h2 em {
