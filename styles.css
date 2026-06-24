@@ -10067,7 +10067,29 @@ a {
   }
 
   #sages .sage-grid > article:nth-child(5) .offer-checks {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  #sages .sage-grid > article:nth-child(5) .offer-checks > article {
+    min-height: 112px;
+    padding: 10px 8px;
+  }
+
+  #sages .sage-grid > article:nth-child(5) .offer-checks img {
+    width: 34px;
+    height: 34px;
+  }
+
+  #sages .sage-grid > article:nth-child(5) .offer-checks strong {
+    margin-top: 4px;
+    font-size: 0.88rem;
+  }
+
+  #sages .sage-grid > article:nth-child(5) .offer-checks span {
+    margin-top: 4px;
+    font-size: 0.68rem;
+    line-height: 1.45;
   }
 
   #sages .sage-grid article:nth-child(7) .flow-preview li {
