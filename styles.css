@@ -10223,6 +10223,90 @@ a {
     line-height: 1.7;
   }
 
+  .deliverables-panel {
+    gap: 18px;
+    width: calc(100% - 24px);
+    padding: 28px 14px 24px;
+    margin-inline: auto;
+  }
+
+  .deliverables-heading {
+    max-width: 100%;
+  }
+
+  .deliverables-heading .eyebrow {
+    width: min(252px, 100%);
+    min-height: 64px;
+    padding: 8px 34px 9px 82px;
+    margin-bottom: 8px;
+    font-size: 0.92rem;
+    background-size: contain;
+  }
+
+  .deliverables-heading h2 {
+    font-size: clamp(1.86rem, 7.4vw, 2.12rem);
+    line-height: 1.42;
+    text-wrap: balance;
+  }
+
+  .deliverables-heading h2::after {
+    height: 14px;
+    margin-top: 12px;
+  }
+
+  .deliverables-heading p {
+    margin-top: 10px !important;
+    font-size: 0.94rem;
+    line-height: 1.75;
+  }
+
+  .deliverables-heading p br {
+    display: none;
+  }
+
+  .deliverables-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    width: 100%;
+  }
+
+  .deliverables-grid li,
+  .deliverables-grid li:nth-last-child(3) {
+    grid-column: auto;
+    min-height: 92px;
+    padding: 10px 8px;
+  }
+
+  .deliverable-icon {
+    width: 48px;
+    height: 42px;
+    margin-bottom: 6px;
+  }
+
+  .deliverables-grid strong {
+    font-size: 0.84rem;
+    line-height: 1.32;
+  }
+
+  .deliverables-support {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 14px 16px 16px;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .support-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto;
+  }
+
+  .deliverables-support p {
+    font-size: 0.94rem;
+    line-height: 1.65;
+  }
+
   .faq-hero {
     grid-template-columns: 1fr;
     min-height: 0;
