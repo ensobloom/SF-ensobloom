@@ -2811,6 +2811,10 @@ a {
   font-style: normal;
 }
 
+.sages-title-sp {
+  display: none;
+}
+
 .sages-intro-dots {
   display: grid;
   grid-template-columns: minmax(74px, 1fr) auto minmax(74px, 1fr);
@@ -9858,16 +9862,36 @@ a {
   }
 
   .sages-intro-lead {
-    font-size: clamp(1.22rem, 5.8vw, 1.68rem);
+    display: none;
   }
 
   .sages-intro h2 {
+    display: none;
+  }
+
+  .sages-title-sp {
+    display: grid !important;
+    gap: 2px;
     max-width: 100%;
-    font-size: clamp(2rem, 9.2vw, 2.58rem);
-    line-height: 1.28;
+    margin: 0 auto;
+    color: #2c2729;
+    font-size: clamp(2.02rem, 9.2vw, 2.42rem);
+    font-weight: 900;
+    line-height: 1.25;
+    letter-spacing: 0;
+    text-align: center;
     white-space: normal;
     word-break: keep-all;
     overflow-wrap: anywhere;
+  }
+
+  .sages-title-sp .sages-title-main {
+    font-size: 1.08em;
+  }
+
+  .sages-title-sp em {
+    color: #d82031;
+    font-style: normal;
   }
 
   .sages-intro-copy {
