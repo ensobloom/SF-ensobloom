@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>管理画面 | 無料チラシ診断</title>
+    <meta
+      name="description"
+      content="チラシ制作サブスクの依頼管理、ステータス変更、納品登録を行う管理画面です。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="assets/logo-mark.png" />
+    <link rel="stylesheet" href="styles.css?v=20260623-17" />
+  </head>
+  <body class="admin-page">
+    <header class="site-header" aria-label="サイトヘッダー">
+      <a class="brand" href="index.html#top" aria-label="無料チラシ診断 トップ">
+        <span class="brand-mark"><img src="assets/logo-mark.png" alt="" /></span>
+        <span>
+          <strong>無料チラシ診断</strong>
+          <small>管理画面</small>
+        </span>
+      </a>
+      <nav class="site-nav" aria-label="主要ナビゲーション">
+        <a href="#admin-board">案件ボード</a>
+        <a href="#admin-delivery">納品登録</a>
+        <a href="portal.html">顧客ポータル</a>
+        <a href="index.html#top">LP</a>
+      </nav>
+      <a class="header-cta" href="portal.html">ポータルへ</a>
+    </header>
+
+    <main class="admin-app">
+      <section class="portal-hero admin-hero" aria-labelledby="admin-title">
+        <div class="section-inner portal-hero-inner">
+          <div>
+            <p class="eyebrow">Admin Workspace</p>
+            <h1 id="admin-title">制作依頼、やりとり、納品をまとめて管理します。</h1>
+            <p>
+              顧客ポータルから入った依頼を案件化し、ステータス変更・返信・初稿納品・最終納品まで管理します。
+              今はローカル保存のプロトタイプです。
+            </p>
+          </div>
+          <div class="portal-plan-card">
+            <span>管理モード</span>
+            <strong>案件ボード</strong>
+            <p>受付確認中 / 制作中 / 初稿納品 / 修正対応 / 完了</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section portal-section" aria-labelledby="admin-summary-title">
+        <div class="section-inner">
+          <div class="section-heading compact-heading">
+            <p class="eyebrow">Summary</p>
+            <h2 id="admin-summary-title">今日見るべき案件</h2>
+          </div>
+          <div class="portal-metrics">
+            <article>
+              <span>受付確認中</span>
+              <strong id="adminPendingCount">-</strong>
+              <p>内容確認が必要な依頼</p>
+            </article>
+            <article>
+              <span>制作中</span>
+              <strong id="adminWorkingCount">-</strong>
+              <p>初稿制作中の案件</p>
+            </article>
+            <article>
+              <span>修正対応</span>
+              <strong id="adminRevisionCount">-</strong>
+              <p>修正依頼が届いている案件</p>
+            </article>
+            <article>
+              <span>今月の依頼数</span>
+              <strong id="adminMonthlyCount">-</strong>
+              <p>制作枠の利用状況確認用</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="admin-board" class="section admin-board-section" aria-labelledby="board-title">
+        <div class="section-inner">
+          <div class="section-heading compact-heading">
+            <p class="eyebrow">Board</p>
+            <h2 id="board-title">案件ボード</h2>
+            <p>カードのボタンでステータスを更新できます。顧客ポータルにも反映されます。</p>
+          </div>
+          <div class="admin-board" id="adminBoard"></div>
+        </div>
+      </section>
+
+      <section id="admin-delivery" class="section tinted" aria-labelledby="delivery-admin-title">
+        <div class="section-inner admin-detail-layout">
+          <div>
+            <div class="section-heading compact-heading">
+              <p class="eyebrow">Case Detail</p>
+              <h2 id="delivery-admin-title">案件詳細</h2>
+            </div>
+            <div class="admin-detail-card" id="adminCaseDetail"></div>
+          </div>
+          <div class="admin-forms">
+            <form class="contact-form" id="adminMessageForm">
+              <h3>顧客へ返信</h3>
+              <label>
+                <span>対象案件</span>
+                <select name="project_id" id="adminMessageProject"></select>
+              </label>
+              <label>
+                <span>返信内容</span>
+                <textarea name="message" rows="5" placeholder="例：内容確認しました。初稿は〇日目安で進めます。" required></textarea>
+              </label>
+              <button class="secondary-button" type="submit">返信を追加</button>
+              <p class="form-note" id="adminMessageStatus" aria-live="polite">返信は顧客ポータルのチャット履歴に表示されます。</p>
+            </form>
+
+            <form class="contact-form" id="adminDeliveryForm">
+              <h3>納品登録</h3>
+              <label>
+                <span>対象案件</span>
+                <select name="project_id" id="adminDeliveryProject"></select>
+              </label>
+              <label>
+                <span>納品種別</span>
+                <select name="delivery_status">
+                  <option value="初稿納品">初稿納品</option>
+                  <option value="完了">最終納品</option>
+                </select>
+              </label>
+              <label>
+                <span>納品タイトル</span>
+                <input name="title" type="text" placeholder="例：初稿PDF / 最終入稿データ" required />
+              </label>
+              <label>
+                <span>納品ファイル</span>
+                <input name="delivery_file" type="file" accept="image/*,.pdf,.ai,.psd,.zip,.doc,.docx,.ppt,.pptx" />
+              </label>
+              <label>
+                <span>メッセージ</span>
+                <textarea name="message" rows="5" placeholder="例：初稿をお送りします。見出し・価格部分をご確認ください。" required></textarea>
+              </label>
+              <button class="primary-button" type="submit">納品を登録</button>
+              <p class="form-note" id="adminDeliveryStatus" aria-live="polite">納品登録後、顧客ポータルの納品データに表示されます。</p>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="section-inner footer-inner">
+        <a class="brand" href="index.html#top" aria-label="無料チラシ診断 トップへ戻る">
+          <span class="brand-mark"><img src="assets/logo-mark.png" alt="" /></span>
+          <span>
+            <strong>無料チラシ診断</strong>
+            <small>管理画面</small>
+          </span>
+        </a>
+        <nav aria-label="フッターナビゲーション">
+          <a href="portal.html">顧客ポータル</a>
+          <a href="index.html#top">LP</a>
+          <a href="contact.html">お問い合わせ</a>
+          <a href="privacy.html">プライバシーポリシー</a>
+        </nav>
+        <small>© 無料チラシ診断</small>
+      </div>
+    </footer>
+
+    <script src="script.js?v=20260618-4"></script>
+  </body>
+</html>

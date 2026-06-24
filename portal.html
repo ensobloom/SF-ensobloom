@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>制作依頼ポータル | 無料チラシ診断</title>
+    <meta
+      name="description"
+      content="チラシ制作サブスク契約者向けの制作依頼・納品・修正依頼ポータルです。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="assets/logo-mark.png" />
+    <link rel="stylesheet" href="styles.css?v=20260623-17" />
+  </head>
+  <body class="portal-page">
+    <header class="site-header" aria-label="サイトヘッダー">
+      <a class="brand" href="index.html#top" aria-label="無料チラシ診断 トップ">
+        <span class="brand-mark"><img src="assets/logo-mark.png" alt="" /></span>
+        <span>
+          <strong>無料チラシ診断</strong>
+          <small>制作依頼ポータル</small>
+        </span>
+      </a>
+      <nav class="site-nav" aria-label="主要ナビゲーション">
+        <a href="#dashboard">ダッシュボード</a>
+        <a href="#request">制作依頼</a>
+        <a href="#deliveries">納品</a>
+        <a href="admin.html">管理画面</a>
+        <a href="index.html#pricing">料金</a>
+      </nav>
+      <a class="header-cta" href="index.html#top">LPへ戻る</a>
+    </header>
+
+    <main class="portal-app">
+      <section class="portal-hero" aria-labelledby="portal-title">
+        <div class="section-inner portal-hero-inner">
+          <div>
+            <p class="eyebrow">Subscriber Workspace</p>
+            <h1 id="portal-title">チャットで依頼して、納品までここで確認できます。</h1>
+            <p>
+              チラシ、POP、SNS告知、求人チラシなどの制作依頼をチャット感覚で送信。
+              残り制作枠、進行状況、初稿納品、修正依頼までひとつの画面で管理します。
+            </p>
+          </div>
+          <div class="portal-plan-card" aria-label="契約プラン">
+            <span>現在のプラン</span>
+            <strong id="portalPlanName">スタンダード</strong>
+            <p>月5点まで / 2〜3営業日で初稿目安</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="dashboard" class="section portal-section" aria-labelledby="dashboard-title">
+        <div class="section-inner">
+          <div class="section-heading compact-heading">
+            <p class="eyebrow">Dashboard</p>
+            <h2 id="dashboard-title">今月の制作状況</h2>
+          </div>
+          <div class="portal-metrics">
+            <article>
+              <span>残り制作枠</span>
+              <strong id="portalRemainingSlots">-</strong>
+              <p id="portalUsageText">読み込み中</p>
+            </article>
+            <article>
+              <span>進行中の依頼</span>
+              <strong id="portalActiveCount">-</strong>
+              <p>受付、制作、修正対応中の案件</p>
+            </article>
+            <article>
+              <span>次の納品予定</span>
+              <strong id="portalNextDelivery">-</strong>
+              <p>初稿または修正戻しの目安</p>
+            </article>
+            <article>
+              <span>納品済み</span>
+              <strong id="portalDeliveryCount">-</strong>
+              <p>確認できる納品データ</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="request" class="section portal-workspace-section" aria-labelledby="request-title">
+        <div class="section-inner">
+          <div class="section-heading compact-heading">
+            <p class="eyebrow">Request Chat</p>
+            <h2 id="request-title">制作依頼チャット</h2>
+            <p>入力した内容は制作依頼として保存され、管理画面にも反映されます。</p>
+          </div>
+
+          <div class="portal-workspace">
+            <aside class="project-sidebar" aria-label="依頼一覧">
+              <div class="sidebar-head">
+                <h3>依頼一覧</h3>
+                <span id="projectCountLabel">0件</span>
+              </div>
+              <div class="project-list" id="portalProjectList"></div>
+            </aside>
+
+            <section class="portal-thread-card" aria-labelledby="thread-title">
+              <header class="thread-header">
+                <div>
+                  <p>選択中の依頼</p>
+                  <h3 id="thread-title">依頼を選択してください</h3>
+                </div>
+                <span class="status-pill" id="threadStatus">未選択</span>
+              </header>
+              <div class="portal-thread" id="portalThread" aria-live="polite"></div>
+              <form class="portal-chat-form" id="portalRequestForm">
+                <label>
+                  <span>作りたいもの</span>
+                  <select name="request_type" required>
+                    <option value="">選択してください</option>
+                    <option value="チラシ">チラシ</option>
+                    <option value="求人チラシ">求人チラシ</option>
+                    <option value="キャンペーン告知">キャンペーン告知</option>
+                    <option value="店頭POP">店頭POP</option>
+                    <option value="SNS告知画像">SNS告知画像</option>
+                    <option value="イベント案内">イベント案内</option>
+                    <option value="その他">その他</option>
+                  </select>
+                </label>
+                <label>
+                  <span>依頼タイトル</span>
+                  <input name="title" type="text" placeholder="例：7月キャンペーン告知チラシ" required />
+                </label>
+                <label>
+                  <span>目的</span>
+                  <input name="purpose" type="text" placeholder="例：新規集客、予約獲得、求人応募など" required />
+                </label>
+                <label>
+                  <span>希望納期</span>
+                  <input name="due_preference" type="text" placeholder="例：できれば来週金曜まで" />
+                </label>
+                <label class="wide-field">
+                  <span>依頼内容</span>
+                  <textarea name="message" rows="4" placeholder="掲載したい内容、ターゲット、キャンペーン内容、参考イメージなどを入力してください。" required></textarea>
+                </label>
+                <label class="wide-field">
+                  <span>素材アップロード</span>
+                  <input name="asset" type="file" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xlsx,.csv" />
+                </label>
+                <button class="primary-button" type="submit">この内容で制作依頼を送る</button>
+                <p class="form-note" id="portalRequestStatus" aria-live="polite">送信すると、依頼一覧と管理画面に追加されます。</p>
+              </form>
+            </section>
+
+            <aside class="project-detail-card" aria-label="依頼詳細">
+              <h3>依頼詳細</h3>
+              <dl class="detail-list" id="portalDetailList"></dl>
+              <form class="revision-form" id="portalRevisionForm">
+                <label>
+                  <span>修正依頼</span>
+                  <textarea name="revision_message" rows="4" placeholder="例：見出しをもう少し強く、電話番号を大きくしたいです。"></textarea>
+                </label>
+                <label>
+                  <span>修正用ファイル</span>
+                  <input name="revision_asset" type="file" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xlsx,.csv" />
+                </label>
+                <button class="secondary-button" type="submit">選択中の依頼に修正を送る</button>
+                <p class="form-note" id="portalRevisionStatus" aria-live="polite">初稿確認後の修正依頼に使います。</p>
+              </form>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section id="deliveries" class="section tinted" aria-labelledby="deliveries-title">
+        <div class="section-inner">
+          <div class="section-heading compact-heading">
+            <p class="eyebrow">Deliveries</p>
+            <h2 id="deliveries-title">納品データ</h2>
+            <p>管理画面で登録された初稿・最終データがここに表示されます。</p>
+          </div>
+          <div class="delivery-grid" id="portalDeliveryList"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="section-inner footer-inner">
+        <a class="brand" href="index.html#top" aria-label="無料チラシ診断 トップへ戻る">
+          <span class="brand-mark"><img src="assets/logo-mark.png" alt="" /></span>
+          <span>
+            <strong>無料チラシ診断</strong>
+            <small>制作依頼ポータル</small>
+          </span>
+        </a>
+        <nav aria-label="フッターナビゲーション">
+          <a href="index.html#top">LP</a>
+          <a href="contact.html">お問い合わせ</a>
+          <a href="admin.html">管理画面</a>
+          <a href="privacy.html">プライバシーポリシー</a>
+        </nav>
+        <small>© 無料チラシ診断</small>
+      </div>
+    </footer>
+
+    <script src="script.js?v=20260618-4"></script>
+  </body>
+</html>
