@@ -4780,6 +4780,10 @@ a {
   white-space: nowrap;
 }
 
+#works .works-heading h2 .works-title-tail {
+  display: inline;
+}
+
 #works .works-heading h2 em {
   position: relative;
   z-index: 1;
@@ -10169,16 +10173,32 @@ a {
 
   #works .works-heading h2 {
     max-width: 100%;
-    font-size: clamp(1.82rem, 7.2vw, 2.12rem);
-    line-height: 1.45;
+    font-size: clamp(1.72rem, 6.7vw, 1.98rem);
+    line-height: 1.42;
     text-align: center;
     text-wrap: balance;
   }
 
+  #works .works-heading h2 > span:first-child {
+    display: block;
+    white-space: nowrap;
+    font-size: 0.9em;
+  }
+
   #works .works-heading h2 .works-title-line,
-  #works .works-heading h2 em,
-  #works .works-heading h2 em + span {
-    white-space: normal;
+  #works .works-heading h2 em {
+    display: block;
+    white-space: nowrap;
+  }
+
+  #works .works-heading h2 em {
+    font-size: 1.08em;
+  }
+
+  #works .works-heading h2 .works-title-tail {
+    display: block;
+    white-space: nowrap;
+    font-size: 0.96em;
   }
 
   #works .works-heading-note {
