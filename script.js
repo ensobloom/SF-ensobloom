@@ -256,9 +256,16 @@ if (flyerFileInput) {
       size: file.size,
       lastModified: file.lastModified
     };
+    state.uploadedFile = file;
 
     addMessage("user", `ファイルを選択しました：${file.name}`);
     addMessage("bot", "チラシを受け取ったのじゃ。\nありがとうなのじゃ。\n\n診断レポートで見るポイントを整理するために、いくつか質問するのじゃ。");
+    if (state.editingField === "flyer_file") {
+      state.editingField = "";
+      addMessage("bot", "修正したのじゃ。確認画面に戻るのじゃ。");
+      showConfirmation();
+      return;
+    }
     askNextMissing();
   });
 }
@@ -1855,7 +1862,7 @@ const CHAT_SUMMARY_FIELDS = {
 
 const CHAT_LABELS = {
   intake_type: "受付種別",
-  initial_concern: "最初の悩み",
+  initial_concern: "困っていること",
   issue_text: "困っていること",
   flyer_file: "チラシ画像/PDF",
   industry: "業種",
@@ -1909,12 +1916,7 @@ function openChat() {
       "bot",
       "こんにちは。\n今のチラシや販促について、気になっていることを教えてほしいのじゃ。\n\nたとえば、\n「チラシを配っても反応がない」\n「作り直す前に見てほしい」\n「制作料金を知りたい」\n「集客全体を相談したい」\nなど、まだ整理できていなくても大丈夫じゃ。"
     );
-    setActions([
-      "チラシを無料診断してほしい",
-      "制作料金を知りたい",
-      "販促全体を相談したい",
-      "まだよく分からない"
-    ]);
+    setActions([]);
   }
   window.setTimeout(() => chatInput.focus(), 120);
 }
@@ -2194,7 +2196,7 @@ function addProgress(stageName) {
 
 function askNextMissing() {
   const fields = getCurrentFields();
-  const next = fields.find((field) => !field.optional && !state.data[field.name]) || fields.find((field) => field.optional && !state.data[field.name]);
+  const next = fields.find((field) => !state.data[field.name]);
   if (next) {
     askStage(next.name);
     return;
@@ -2346,6 +2348,1051 @@ function restartChat() {
   state.stage = "initial_concern";
   state.intakeType = "";
   state.data = createChatLeadData();
+  chatMessages.replaceChildren();
+  setActions([]);
+  openChat();
+}
+
+// Chatbot v3: complete production-ready intake flow.
+const CHATBOT_V3_ROUTE_LABELS = {
+  free_diagnosis: "無料チラシ診断",
+  production_inquiry: "制作・料金問い合わせ",
+  promotion_consulting: "販促相談・伴走問い合わせ"
+};
+
+const CHATBOT_V3_LABELS = {
+  intake_type: "受付種別",
+  initial_concern: "困っていること",
+  flyer_file: "チラシ画像/PDF",
+  industry: "業種",
+  flyer_purpose: "チラシの目的",
+  distribution_method: "配布方法",
+  distribution_area: "配布地域",
+  desired_response: "増やしたい反応",
+  current_response_status: "現在の反応状況",
+  target_audience: "主なターゲット",
+  service_price: "商品・サービスの価格帯",
+  strengths: "自社の強み",
+  competitor_difference: "競合との違い",
+  current_offer: "現在のオファー・特典",
+  distribution_volume: "配布枚数・配布予定日",
+  contact_flow: "問い合わせ導線",
+  reference_url: "参考URL・SNS",
+  review_focus: "特に見てほしいポイント",
+  desired_improvement: "希望する改善方向",
+  inquiry_detail: "相談したい内容",
+  production_item: "作りたいもの",
+  preferred_timing: "希望時期",
+  budget: "予算感",
+  current_challenge: "現在の課題",
+  promotion_challenge: "現在の販促課題",
+  promotion_channels: "使っている販促手段",
+  consulting_scope: "相談したい範囲",
+  goal: "目標",
+  company_name: "会社名・店舗名",
+  customer_name: "お名前",
+  email: "メールアドレス",
+  phone: "電話番号",
+  consent: "同意確認",
+  created_at: "受付日時"
+};
+
+const CHATBOT_V3_FIELDS = {
+  free_diagnosis: [
+    {
+      name: "flyer_file",
+      label: "チラシ画像またはPDF",
+      question:
+        "まず、診断したいチラシ画像またはPDFを送ってほしいのじゃ。\n表面だけでも大丈夫じゃ。裏面がある場合は、両方送るとより確認しやすいのじゃ。",
+      action: { label: "チラシ画像/PDFを選択", kind: "file", important: true }
+    },
+    {
+      name: "industry",
+      label: "業種",
+      question:
+        "ありがとうなのじゃ。\n次に、業種を教えてほしいのじゃ。\n\n例：整体院、美容室、飲食店、リフォーム、士業、スクール、求人募集などじゃ。"
+    },
+    {
+      name: "flyer_purpose",
+      label: "チラシの目的",
+      question:
+        "このチラシの目的を教えてほしいのじゃ。\n\n例：問い合わせを増やしたい、予約を増やしたい、来店を増やしたい、求人応募を増やしたい、商品を販売したい、キャンペーンを知らせたい、などじゃ。"
+    },
+    {
+      name: "target_audience",
+      label: "主なターゲット",
+      question:
+        "主に誰に向けたチラシなのか教えてほしいのじゃ。\n\n例：30〜50代女性、近隣の戸建て世帯、宴会の幹事、未経験で地元勤務を探す人、などじゃ。"
+    },
+    {
+      name: "distribution_method",
+      label: "配布方法",
+      question:
+        "このチラシは、どのように配布している、または配布する予定じゃ？\n\n例：ポスティング、新聞折込、店頭配布、手渡し、DM、SNS掲載、既存客への案内などじゃ。"
+    },
+    {
+      name: "distribution_area",
+      label: "配布地域",
+      question:
+        "配布する地域も教えてほしいのじゃ。\n\n例：〇〇市、〇〇駅周辺、店舗から半径3km以内、〇〇区全域などじゃ。"
+    },
+    {
+      name: "distribution_volume",
+      label: "配布枚数・配布予定日",
+      optional: true,
+      question:
+        "分かる範囲で、配布枚数や配布予定日も教えてほしいのじゃ。\n\n例：3,000枚、来月上旬、まだ未定、などじゃ。未定なら「未定」で大丈夫じゃ。"
+    },
+    {
+      name: "desired_response",
+      label: "増やしたい反応",
+      question:
+        "このチラシで一番増やしたい反応は何じゃ？\n\n例：電話問い合わせ、LINE登録、Web予約、来店、資料請求、応募、購入などじゃ。"
+    },
+    {
+      name: "current_response_status",
+      label: "現在の反応状況",
+      question:
+        "今の反応状況も、分かる範囲で教えてほしいのじゃ。\n\n例：1,000枚配って問い合わせ1件、ほとんど反応なし、まだ配布前、以前より反応が落ちた、などじゃ。"
+    },
+    {
+      name: "service_price",
+      label: "商品・サービスの価格帯",
+      optional: true,
+      question:
+        "商品やサービスの価格帯も、分かる範囲で教えてほしいのじゃ。\n\n例：初回3,980円、平均単価8,000円、見積もり制、求人なので給与条件、などじゃ。"
+    },
+    {
+      name: "strengths",
+      label: "自社の強み",
+      optional: true,
+      question:
+        "お店やサービスの強みを教えてほしいのじゃ。\n\n例：地域密着、専門性、実績、丁寧な対応、価格、早さ、安心感、などじゃ。"
+    },
+    {
+      name: "competitor_difference",
+      label: "競合との違い",
+      optional: true,
+      question:
+        "競合や近いサービスと比べて、違いがあれば教えてほしいのじゃ。\n\n分からなければ「不明」で大丈夫じゃ。"
+    },
+    {
+      name: "current_offer",
+      label: "現在のオファー・特典",
+      optional: true,
+      question:
+        "今のチラシに、特典や申し込み理由はあるかのう？\n\n例：初回無料、期間限定、先着枠、無料相談、割引、特になし、などじゃ。"
+    },
+    {
+      name: "contact_flow",
+      label: "問い合わせ導線",
+      optional: true,
+      question:
+        "問い合わせや申し込みは、どこから受ける想定じゃ？\n\n例：電話、LINE、Webフォーム、QRコード、来店、メール、などじゃ。"
+    },
+    {
+      name: "reference_url",
+      label: "参考URL・SNS",
+      optional: true,
+      question:
+        "ホームページやSNS、参考URLがあれば送ってほしいのじゃ。\nない場合は「なし」で大丈夫じゃ。"
+    },
+    {
+      name: "review_focus",
+      label: "特に見てほしいポイント",
+      optional: true,
+      question:
+        "診断で特に見てほしいところはあるかのう？\n\n例：見出し、デザイン、文章、導線、特典、ターゲット、全体、などじゃ。"
+    },
+    {
+      name: "desired_improvement",
+      label: "希望する改善方向",
+      optional: true,
+      question:
+        "希望する改善方向があれば教えてほしいのじゃ。\n\n例：もっと反応を増やしたい、信頼感を出したい、女性向けにしたい、求人応募を増やしたい、などじゃ。"
+    },
+    {
+      name: "company_name",
+      label: "会社名・店舗名",
+      question: "診断レポートに記載するため、会社名または店舗名を教えてほしいのじゃ。"
+    },
+    {
+      name: "customer_name",
+      label: "お名前",
+      question: "担当者のお名前を教えてほしいのじゃ。"
+    },
+    {
+      name: "email",
+      label: "メールアドレス",
+      question:
+        "診断レポートを送るメールアドレスを教えてほしいのじゃ。\n入力間違いがあるとレポートを届けられないため、確認できるアドレスを入力してほしいのじゃ。"
+    }
+  ],
+  production_inquiry: [
+    {
+      name: "inquiry_detail",
+      label: "相談したい内容",
+      question:
+        "制作・料金について相談したい内容を教えてほしいのじゃ。\n\n例：チラシを作りたい、料金を知りたい、見積もりがほしい、サブスクを相談したい、急ぎで制作したい、などじゃ。"
+    },
+    {
+      name: "production_item",
+      label: "作りたいもの",
+      question:
+        "今回作りたいもの、または相談したい制作物を教えてほしいのじゃ。\n\n例：チラシ、ポスター、DM、メニュー表、求人チラシ、LINE画像、SNS投稿画像、LPなどじゃ。"
+    },
+    {
+      name: "preferred_timing",
+      label: "希望時期",
+      question:
+        "希望の時期はあるかのう？\n\n例：できるだけ早く、今月中、来月配布予定、まだ未定、などじゃ。"
+    },
+    {
+      name: "budget",
+      label: "予算感",
+      optional: true,
+      question:
+        "差し支えなければ、予算感も教えてほしいのじゃ。\n\n例：1万円以内、3万円前後、月額プランで相談したい、まだ分からない、などじゃ。\n\nまだ分からない場合は「未定」で大丈夫じゃ。"
+    },
+    {
+      name: "current_challenge",
+      label: "現在の課題",
+      question:
+        "今回、制作を考えている背景や課題も教えてほしいのじゃ。\n\n例：反応がない、毎回作るのが大変、求人応募を増やしたい、デザインを整えたい、販促物を継続して作りたい、などじゃ。"
+    },
+    {
+      name: "company_name",
+      label: "会社名・店舗名",
+      question: "詳しい案内を送るために、会社名または店舗名を教えてほしいのじゃ。"
+    },
+    {
+      name: "customer_name",
+      label: "お名前",
+      question: "担当者のお名前を教えてほしいのじゃ。"
+    },
+    {
+      name: "email",
+      label: "メールアドレス",
+      question: "連絡用のメールアドレスを教えてほしいのじゃ。"
+    },
+    {
+      name: "phone",
+      label: "電話番号",
+      optional: true,
+      question:
+        "電話での連絡を希望する場合は、電話番号も教えてほしいのじゃ。\nメールのみでよければ「なし」で大丈夫じゃ。"
+    }
+  ],
+  promotion_consulting: [
+    {
+      name: "promotion_challenge",
+      label: "現在の販促課題",
+      question:
+        "今いちばん困っている販促課題を教えてほしいのじゃ。\n\n例：問い合わせが増えない、リピートにつながらない、求人が集まらない、何から改善すればいいか分からない、などじゃ。"
+    },
+    {
+      name: "promotion_channels",
+      label: "使っている販促手段",
+      question:
+        "今使っている販促手段を教えてほしいのじゃ。\n\n例：チラシ、ホームページ、LP、LINE、Instagram、Googleマップ、広告、紹介、店頭告知などじゃ。"
+    },
+    {
+      name: "consulting_scope",
+      label: "相談したい範囲",
+      question:
+        "どのあたりまで相談したいか教えてほしいのじゃ。\n\n例：チラシ改善だけ、LINE導線も含めたい、SNSも見てほしい、販促全体を整理したい、毎月伴走してほしい、などじゃ。"
+    },
+    {
+      name: "goal",
+      label: "目標",
+      question:
+        "今後増やしたい成果を教えてほしいのじゃ。\n\n例：問い合わせ、予約、来店、求人応募、リピート、客単価、売上などじゃ。"
+    },
+    {
+      name: "preferred_timing",
+      label: "希望時期",
+      question:
+        "相談を始めたい時期はあるかのう？\n\n例：できるだけ早く、今月中、来月から、まだ未定、などじゃ。"
+    },
+    {
+      name: "budget",
+      label: "予算感",
+      optional: true,
+      question:
+        "差し支えなければ、販促相談や伴走に使える予算感を教えてほしいのじゃ。\n\n例：まずは小さく相談したい、月5万円以内、月15万円前後、内容を見て相談したい、まだ分からない、などじゃ。\n\nまだ分からない場合は「未定」で大丈夫じゃ。"
+    },
+    {
+      name: "company_name",
+      label: "会社名・店舗名",
+      question: "詳しい案内を送るために、会社名または店舗名を教えてほしいのじゃ。"
+    },
+    {
+      name: "customer_name",
+      label: "お名前",
+      question: "担当者のお名前を教えてほしいのじゃ。"
+    },
+    {
+      name: "email",
+      label: "メールアドレス",
+      question: "連絡用のメールアドレスを教えてほしいのじゃ。"
+    },
+    {
+      name: "phone",
+      label: "電話番号",
+      optional: true,
+      question:
+        "電話での連絡を希望する場合は、電話番号も教えてほしいのじゃ。\nメールのみでよければ「なし」で大丈夫じゃ。"
+    }
+  ]
+};
+
+const CHATBOT_V3_SUMMARY_FIELDS = {
+  free_diagnosis: [
+    "intake_type",
+    "initial_concern",
+    "flyer_file",
+    "industry",
+    "flyer_purpose",
+    "target_audience",
+    "distribution_method",
+    "distribution_area",
+    "distribution_volume",
+    "desired_response",
+    "current_response_status",
+    "service_price",
+    "strengths",
+    "competitor_difference",
+    "current_offer",
+    "contact_flow",
+    "reference_url",
+    "review_focus",
+    "desired_improvement",
+    "company_name",
+    "customer_name",
+    "email"
+  ],
+  production_inquiry: [
+    "intake_type",
+    "initial_concern",
+    "inquiry_detail",
+    "production_item",
+    "preferred_timing",
+    "budget",
+    "current_challenge",
+    "company_name",
+    "customer_name",
+    "email",
+    "phone"
+  ],
+  promotion_consulting: [
+    "intake_type",
+    "initial_concern",
+    "promotion_challenge",
+    "promotion_channels",
+    "consulting_scope",
+    "goal",
+    "preferred_timing",
+    "budget",
+    "company_name",
+    "customer_name",
+    "email",
+    "phone"
+  ]
+};
+
+function createChatLeadData() {
+  return {
+    ...initialData(),
+    intake_type: "",
+    initial_concern: "",
+    target_audience: "",
+    service_price: "",
+    strengths: "",
+    competitor_difference: "",
+    current_offer: "",
+    distribution_volume: "",
+    contact_flow: "",
+    reference_url: "",
+    review_focus: "",
+    desired_improvement: "",
+    inquiry_detail: "",
+    production_item: "",
+    preferred_timing: "",
+    budget: "",
+    current_challenge: "",
+    promotion_challenge: "",
+    promotion_channels: "",
+    consulting_scope: "",
+    goal: "",
+    phone: "",
+    consent: false,
+    created_at: ""
+  };
+}
+
+function openChat() {
+  if (!chatShell || !chatInput) return;
+  chatShell.dataset.open = "true";
+  if (!state.started) {
+    state.started = true;
+    state.stage = "initial_concern";
+    state.pendingQuestion = null;
+    state.intakeType = "";
+    state.isSubmitting = false;
+    state.errorMessage = "";
+    state.uploadedFile = null;
+    state.data = createChatLeadData();
+    addMessage(
+      "bot",
+      "こんにちは。\n今のチラシや販促について、気になっていることを教えてほしいのじゃ。\n\nたとえば、\n「チラシを配っても反応がない」\n「作り直す前に見てほしい」\n「制作料金を知りたい」\n「集客全体を相談したい」\nなど、まだ整理できていなくても大丈夫じゃ。"
+    );
+    setActions([]);
+  }
+  window.setTimeout(() => chatInput.focus(), 120);
+}
+
+function setActions(actions = []) {
+  if (!chatActions) return;
+  chatActions.replaceChildren();
+  actions.forEach((action) => {
+    const config = typeof action === "string" ? { label: action, value: action } : action;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = config.label;
+    if (config.important) button.classList.add("important");
+    button.addEventListener("click", () => {
+      if (config.kind === "file") {
+        if (flyerFileInput) flyerFileInput.click();
+        return;
+      }
+      if (config.kind === "route") {
+        addMessage("user", config.label);
+        startChatRoute(config.route);
+        return;
+      }
+      if (config.kind === "confirm") {
+        addMessage("user", "同意して送信する");
+        completeApplication();
+        return;
+      }
+      if (config.kind === "confirm_preview") {
+        addMessage("user", "同意して確認へ進む");
+        state.data.consent = true;
+        showConfirmation();
+        return;
+      }
+      if (config.kind === "edit_menu") {
+        showEditFieldChoice();
+        return;
+      }
+      if (config.kind === "edit_field") {
+        addMessage("user", `${config.label}を修正`);
+        state.editingField = config.field;
+        askStage(config.field, { editing: true });
+        return;
+      }
+      if (config.kind === "copy") {
+        copyAdminNotice();
+        return;
+      }
+      if (config.kind === "reset") {
+        restartChat();
+        return;
+      }
+      const value = config.value || config.label;
+      addMessage("user", value);
+      handleText(value);
+    });
+    chatActions.appendChild(button);
+  });
+}
+
+function handleText(rawText) {
+  const text = rawText.trim();
+  if (!text) return;
+
+  if (state.stage === "initial_concern") {
+    state.data.initial_concern = text;
+    state.data.issue_text = text;
+    const route = detectChatRoute(text);
+    if (route) {
+      startChatRoute(route);
+      return;
+    }
+    const support = getSupportResponse(text);
+    if (support) {
+      addMessage("bot", support.message);
+      if (support.route) {
+        startChatRoute(support.route, { skipIntro: true });
+        return;
+      }
+      if (support.actions) {
+        setActions(support.actions);
+        return;
+      }
+    }
+    showRouteChoice();
+    return;
+  }
+
+  if (state.stage === "confirm") {
+    if (/同意|送信|申し込|問い合わせ|はい|ok|OK/.test(text)) {
+      completeApplication();
+      return;
+    }
+    if (/修正|直す|変更/.test(text)) {
+      showEditFieldChoice();
+      return;
+    }
+    addMessage("bot", "送信する場合は「同意して送信する」、修正する場合は「項目を修正する」を選んでほしいのじゃ。");
+    setActions([
+      { label: "同意して送信する", kind: "confirm", important: true },
+      { label: "項目を修正する", kind: "edit_menu" },
+      { label: "最初からやり直す", kind: "reset" }
+    ]);
+    return;
+  }
+
+  if (state.stage === "consent") {
+    if (/同意|確認|進む|はい|ok|OK/.test(text)) {
+      state.data.consent = true;
+      showConfirmation();
+      return;
+    }
+    if (/修正|直す|変更/.test(text)) {
+      showEditFieldChoice();
+      return;
+    }
+    addMessage("bot", "確認画面に進む場合は「同意して確認へ進む」、修正する場合は「項目を修正する」を選んでほしいのじゃ。");
+    setActions([
+      { label: "同意して確認へ進む", kind: "confirm_preview", important: true },
+      { label: "項目を修正する", kind: "edit_menu" },
+      { label: "最初からやり直す", kind: "reset" }
+    ]);
+    return;
+  }
+
+  if (state.stage === "flyer_file") {
+    if (/チラシがまだない|まだない|未作成|これから作|新しく作/i.test(text)) {
+      addMessage(
+        "bot",
+        "チラシがまだない場合は、制作・料金問い合わせとして進めるのが自然じゃ。\n新しく作る前提で、内容や料金の相談を受け付けるのじゃ。"
+      );
+      startChatRoute("production_inquiry", { skipIntro: true });
+      return;
+    }
+    const support = getSupportResponse(text, { allowRoute: false });
+    if (support) {
+      addMessage("bot", support.message);
+      repeatCurrentQuestion();
+      return;
+    }
+    addMessage("bot", "診断にはチラシ画像またはPDFが必要なのじゃ。\njpg、png、pdfのいずれかで、10MB以内のファイルを送ってほしいのじゃ。");
+    setActions([{ label: "チラシ画像/PDFを選択", kind: "file", important: true }]);
+    return;
+  }
+
+  const currentStage = getCurrentStage();
+  const supportAllowed = !currentStage || ![
+    "inquiry_detail",
+    "production_item",
+    "preferred_timing",
+    "budget",
+    "current_challenge",
+    "promotion_challenge",
+    "promotion_channels",
+    "consulting_scope",
+    "goal",
+    "desired_response",
+    "current_response_status",
+    "strengths"
+  ].includes(currentStage.name);
+  const support = getSupportResponse(text, { allowRoute: supportAllowed });
+  if (support) {
+    addMessage("bot", support.message);
+    if (support.route) {
+      startChatRoute(support.route, { skipIntro: true });
+      return;
+    }
+    if (support.actions) {
+      setActions(support.actions);
+      return;
+    }
+    repeatCurrentQuestion();
+    return;
+  }
+
+  if (!currentStage) {
+    repeatCurrentQuestion();
+    return;
+  }
+
+  if (currentStage.name === "email" && !isValidEmail(text)) {
+    addMessage(
+      "bot",
+      "メールアドレスの形式が少し違うようじゃ。\n診断レポートや案内を届けるため、もう一度確認して入力してほしいのじゃ。"
+    );
+    return;
+  }
+
+  state.data[currentStage.name] = extractAnswer(currentStage.name, text);
+  captureExtraInfo(text);
+
+  if (state.editingField) {
+    state.editingField = "";
+    addMessage("bot", "修正したのじゃ。確認画面に戻るのじゃ。");
+    showConfirmation();
+    return;
+  }
+
+  askNextMissing();
+}
+
+function detectChatRoute(text) {
+  const value = text.toLowerCase();
+  if (/料金|費用|見積|見積もり|サブスク|月額|納期|急ぎ|作って|制作|依頼|デザイン|プラン/.test(value)) {
+    return "production_inquiry";
+  }
+  if (/伴走|販促全体|集客全体|販促相談|line|sns|instagram|インスタ|lp|ホームページ|毎月|仕組み|売上|導線|チラシ以外|何から改善/.test(value)) {
+    return "promotion_consulting";
+  }
+  if (/反応がない|反応|問い合わせがない|問い合わせが来ない|予約が入らない|来店につながらない|応募が来ない|求人|何が悪|配布前|見てほしい|診断|改善点|canva|不安|作り直す前|無料診断/.test(value)) {
+    return "free_diagnosis";
+  }
+  return "";
+}
+
+function startChatRoute(route, options = {}) {
+  state.intakeType = route;
+  state.data.intake_type = CHATBOT_V3_ROUTE_LABELS[route];
+  state.editingField = "";
+
+  if (!options.skipIntro) {
+    if (route === "free_diagnosis") {
+      addMessage(
+        "bot",
+        "なるほどじゃ。\n今のチラシで反応や問い合わせにつながっているか不安なのじゃな。\n\nその場合は、まず無料チラシ診断で、見出し・ターゲット・訴求・オファー・問い合わせ導線などを確認するのがよいのじゃ。\n診断だけでも無料で利用できるので、まずは今のチラシ画像またはPDFを送ってほしいのじゃ。"
+      );
+    } else if (route === "production_inquiry") {
+      addMessage(
+        "bot",
+        "もちろん相談できるのじゃ。\nチラシ制作や料金について知りたい場合は、制作・料金問い合わせとして受付できるのじゃ。"
+      );
+    } else {
+      addMessage(
+        "bot",
+        "なるほどじゃ。\nチラシ単体というより、集客や販促全体の流れを相談したいのじゃな。\n販促相談・伴走問い合わせとして受付するのがよいのじゃ。"
+      );
+    }
+  }
+  askNextMissing();
+}
+
+function showRouteChoice() {
+  addMessage(
+    "bot",
+    "ありがとうなのじゃ。\nそなたの状況だと、いくつか相談先が考えられるのじゃ。\n\n今の気持ちに一番近いものを選んでほしいのじゃ。"
+  );
+  setActions([
+    { label: "今のチラシの改善点を無料で見てほしい", kind: "route", route: "free_diagnosis", important: true },
+    { label: "チラシ制作や料金について知りたい", kind: "route", route: "production_inquiry" },
+    { label: "チラシ以外も含めて販促全体を相談したい", kind: "route", route: "promotion_consulting" }
+  ]);
+}
+
+function getSupportResponse(text, options = {}) {
+  const allowRoute = options.allowRoute !== false;
+  if (/本当に無料|無料ですか|無料なの|費用かから/.test(text)) {
+    return {
+      message:
+        "無料チラシ診断だけなら費用はかからないのじゃ。\n診断後に制作を依頼するかどうかは、レポートを見てから判断できるのじゃ。"
+    };
+  }
+  if (/診断だけ|見るだけ|依頼しなくても|契約しなくても/.test(text)) {
+    return {
+      message:
+        "大丈夫じゃ。\n診断だけ利用して、自分で改善する形でも問題ないのじゃ。\n必要な人だけ、後から制作や販促相談を利用できる流れじゃ。"
+    };
+  }
+  if (/pdf|PDF|画像|写真/.test(text) && /いい|大丈夫|可能|できますか|可/.test(text)) {
+    return {
+      message: "PDFでも大丈夫じゃ。\n画像でもPDFでも、内容が読める状態であれば診断できるのじゃ。"
+    };
+  }
+  if (/古い|昔の|過去/.test(text)) {
+    return {
+      message:
+        "古いチラシでも大丈夫じゃ。\n過去に使ったチラシを見ることで、反応が出にくかった原因や、次に直すべきポイントを整理しやすくなるのじゃ。"
+    };
+  }
+  if (/効果.*保証|保証.*効果|売上.*保証|必ず.*(反応|売上|増え|出る)|反応.*保証/.test(text)) {
+    return {
+      message:
+        "反応や売上の保証はできないのじゃ。\nただし、反応を落としている可能性があるポイントや、改善の優先順位を整理することはできるのじゃ。"
+    };
+  }
+  if (/急ぎ|至急|早く|最短/.test(text)) {
+    return {
+      message:
+        "急ぎの場合は、制作・料金問い合わせとして受付するのがよいのじゃ。\n希望時期を確認したうえで、対応できる範囲を案内する流れじゃ。",
+      route: allowRoute ? "production_inquiry" : ""
+    };
+  }
+  if (/チラシ以外|line|sns|instagram|インスタ|ホームページ|lp|販促全体|集客全体/.test(text)) {
+    return {
+      message:
+        "チラシ以外も相談できるのじゃ。\nLINE、SNS、LP、既存客向け案内なども含めて相談したい場合は、販促相談・伴走問い合わせとして受付するのがよいのじゃ。",
+      route: allowRoute ? "promotion_consulting" : ""
+    };
+  }
+  if (/料金|いくら|費用|価格|プラン/.test(text)) {
+    return {
+      message:
+        "無料診断は費用がかからないのじゃ。\n制作を依頼する場合は、内容や点数によってプランが変わるのじゃ。\n\n料金について詳しく知りたい場合は、制作・料金問い合わせとして受付できるのじゃ。",
+      actions: allowRoute ? [
+        { label: "まず無料診断を受けたい", kind: "route", route: "free_diagnosis", important: true },
+        { label: "制作・料金について問い合わせたい", kind: "route", route: "production_inquiry" }
+      ] : null
+    };
+  }
+  return null;
+}
+
+function getCurrentFields() {
+  return CHATBOT_V3_FIELDS[state.intakeType] || [];
+}
+
+function getCurrentStage() {
+  return getCurrentFields().find((field) => field.name === state.stage);
+}
+
+function addProgress(stageName) {
+  const fields = getCurrentFields();
+  const index = fields.findIndex((field) => field.name === stageName);
+  if (index < 0) return;
+  addMessage("progress", `受付ステップ ${index + 1}/${fields.length}：${fields[index].label}`);
+}
+
+function askNextMissing() {
+  const fields = getCurrentFields();
+  const next = fields.find((field) => !state.data[field.name]);
+  if (next) {
+    askStage(next.name);
+    return;
+  }
+  showConsentStep();
+}
+
+function askStage(stageName, options = {}) {
+  const stage = getCurrentFields().find((field) => field.name === stageName);
+  if (!stage) return;
+  state.stage = stageName;
+  if (!options.editing) addProgress(stageName);
+  addMessage("bot", options.editing ? `「${stage.label}」を修正するのじゃ。\n\n${stage.question}` : stage.question);
+  if (stage.action) {
+    setActions([stage.action]);
+  } else if (stage.optional) {
+    setActions(["未定", "なし"]);
+  } else {
+    setActions([]);
+  }
+}
+
+function repeatCurrentQuestion() {
+  const stage = getCurrentStage();
+  if (!stage) {
+    addMessage("bot", "まず、今のチラシや販促で気になっていることを教えてほしいのじゃ。");
+    return;
+  }
+  addMessage("bot", `続けるのじゃ。\n\n${stage.question}`);
+  if (stage.action) setActions([stage.action]);
+}
+
+function showConsentStep() {
+  state.stage = "consent";
+  addMessage(
+    "bot",
+    "最後に確認じゃ。\n入力内容は、受付対応・診断レポート作成・制作や販促相談の案内に使用するのじゃ。\n同意して進む場合は「同意して確認へ進む」を押してほしいのじゃ。"
+  );
+  setActions([
+    { label: "同意して確認へ進む", kind: "confirm_preview", important: true },
+    { label: "項目を修正する", kind: "edit_menu" },
+    { label: "最初からやり直す", kind: "reset" }
+  ]);
+}
+
+function showConfirmation() {
+  state.stage = "confirm";
+  addSummaryMessage();
+  setActions([
+    { label: "同意して送信する", kind: "confirm", important: true },
+    { label: "項目を修正する", kind: "edit_menu" },
+    { label: "最初からやり直す", kind: "reset" }
+  ]);
+}
+
+function addSummaryMessage() {
+  if (!chatMessages) return;
+  const route = state.intakeType || "free_diagnosis";
+  const message = document.createElement("div");
+  message.className = "message bot";
+  const title = document.createElement("p");
+  title.textContent = "以下の内容で受付するのじゃ。";
+  message.appendChild(title);
+
+  const summary = document.createElement("dl");
+  summary.className = "summary-box";
+  getSummaryFields(route).forEach((key) => {
+    const row = document.createElement("div");
+    const dt = document.createElement("dt");
+    const dd = document.createElement("dd");
+    dt.textContent = CHATBOT_V3_LABELS[key] || key;
+    dd.textContent = displayValue(key);
+    row.append(dt, dd);
+    summary.appendChild(row);
+  });
+  const note = document.createElement("p");
+  note.textContent = "内容に問題なければ「同意して送信する」を押してほしいのじゃ。修正したい場合は、項目ごとに直せるのじゃ。";
+  message.append(summary, note);
+  chatMessages.appendChild(message);
+  scrollChatToBottom();
+}
+
+function showEditFieldChoice() {
+  const route = state.intakeType || "free_diagnosis";
+  addMessage("bot", "どの項目を修正するか選んでほしいのじゃ。");
+  const actions = getSummaryFields(route)
+    .filter((key) => !["intake_type", "created_at", "consent", "initial_concern"].includes(key))
+    .map((key) => ({
+      label: CHATBOT_V3_LABELS[key] || key,
+      kind: "edit_field",
+      field: key
+    }));
+  actions.push({ label: "最初からやり直す", kind: "reset" });
+  setActions(actions);
+}
+
+function getSummaryFields(route) {
+  return CHATBOT_V3_SUMMARY_FIELDS[route] || CHATBOT_V3_SUMMARY_FIELDS.free_diagnosis;
+}
+
+async function completeApplication() {
+  const validation = validateChatLead(state.data);
+  if (!validation.valid) {
+    addMessage("bot", validation.message);
+    if (validation.field === "consent") {
+      showConsentStep();
+    } else if (validation.field) {
+      askStage(validation.field);
+    }
+    return;
+  }
+
+  state.data.consent = true;
+  state.data.created_at = new Date().toISOString();
+  state.isSubmitting = true;
+  state.errorMessage = "";
+  setActions([]);
+
+  try {
+    await submitChatLead(state.data);
+  } catch (error) {
+    state.isSubmitting = false;
+    state.errorMessage = error.message;
+    addMessage("bot", "送信中に問題が起きたのじゃ。\n少し時間をおいて、もう一度試してほしいのじゃ。");
+    setActions([
+      { label: "もう一度送信する", kind: "confirm", important: true },
+      { label: "管理者通知をコピー", kind: "copy" },
+      { label: "項目を修正する", kind: "edit_menu" }
+    ]);
+    return;
+  }
+
+  state.isSubmitting = false;
+  if (state.intakeType === "free_diagnosis") {
+    addMessage(
+      "bot",
+      "ありがとうございますじゃ。\n無料チラシ診断の受付が完了したのじゃ。\n\nいただいたチラシと入力内容をもとに、7つのAI仙人の分析フレームを活用して、改善ポイントをA4レポートにまとめるのじゃ。\n\n通常1〜3営業日以内に、入力してもらったメールアドレス宛に送るのじゃ。\n診断だけの利用でも大丈夫じゃ。"
+    );
+  } else if (state.intakeType === "production_inquiry") {
+    addMessage(
+      "bot",
+      "ありがとうございますじゃ。\n制作・料金問い合わせの受付が完了したのじゃ。\n\n入力内容を確認のうえ、制作内容や料金の目安についてメールで案内するのじゃ。\n\nなお、今のチラシがある場合は、無料診断を先に受けることで、作り直すべきポイントが分かりやすくなるのじゃ。"
+    );
+  } else {
+    addMessage(
+      "bot",
+      "ありがとうございますじゃ。\n販促相談・伴走問い合わせの受付が完了したのじゃ。\n\n入力内容を確認のうえ、販促課題や相談内容に合わせて案内するのじゃ。\n\nチラシ、LINE、SNS、LP、既存客向けの案内など、必要な範囲を整理しながら進められるのじゃ。"
+    );
+  }
+  setActions([
+    { label: "管理者通知をコピー", kind: "copy" },
+    { label: "新しく相談する", kind: "reset" }
+  ]);
+}
+
+function validateChatLead(data) {
+  if (!state.intakeType) {
+    return { valid: false, message: "受付種別が選ばれていないのじゃ。まず相談内容を選ぶのじゃ。" };
+  }
+  const missing = getCurrentFields().find((field) => !field.optional && !data[field.name]);
+  if (missing) {
+    return { valid: false, field: missing.name, message: `まだ「${missing.label}」が入力されていないのじゃ。先にここを確認するのじゃ。` };
+  }
+  if (!data.email || !isValidEmail(data.email)) {
+    return {
+      valid: false,
+      field: "email",
+      message: "メールアドレスの形式が少し違うようじゃ。\n診断レポートや案内を届けるため、もう一度確認して入力してほしいのじゃ。"
+    };
+  }
+  if (state.intakeType === "free_diagnosis" && !data.flyer_file) {
+    return {
+      valid: false,
+      field: "flyer_file",
+      message: "無料診断ではチラシ画像またはPDFが必要なのじゃ。"
+    };
+  }
+  if (!data.consent) {
+    return {
+      valid: false,
+      field: "consent",
+      message: "送信前に、入力内容の利用について同意確認が必要なのじゃ。"
+    };
+  }
+  return { valid: true };
+}
+
+function buildChatLeadPayload(data) {
+  return {
+    intakeType: state.intakeType || null,
+    initialConcern: data.initial_concern || "",
+    issueText: data.issue_text || data.initial_concern || "",
+    flyerFileName: data.flyer_file?.name || "",
+    flyerFileType: data.flyer_file?.type || "",
+    flyerFileSize: data.flyer_file?.size || 0,
+    industry: data.industry || "",
+    flyerPurpose: data.flyer_purpose || "",
+    distributionMethod: data.distribution_method || "",
+    distributionArea: data.distribution_area || "",
+    desiredResponse: data.desired_response || "",
+    currentResult: data.current_response_status || "",
+    targetAudience: data.target_audience || "",
+    servicePrice: data.service_price || "",
+    strengths: data.strengths || "",
+    competitorDifference: data.competitor_difference || "",
+    currentOffer: data.current_offer || "",
+    distributionVolume: data.distribution_volume || "",
+    contactFlow: data.contact_flow || "",
+    referenceUrl: data.reference_url || "",
+    reviewFocus: data.review_focus || "",
+    desiredImprovement: data.desired_improvement || "",
+    inquiryDetail: data.inquiry_detail || "",
+    desiredDeliverable: data.production_item || "",
+    desiredTiming: data.preferred_timing || "",
+    budget: data.budget || "",
+    currentIssue: data.current_challenge || "",
+    promotionIssue: data.promotion_challenge || "",
+    currentPromotionMethods: data.promotion_channels || "",
+    consultationScope: data.consulting_scope || "",
+    goal: data.goal || "",
+    companyName: data.company_name || "",
+    contactName: data.customer_name || "",
+    email: data.email || "",
+    phone: data.phone || "",
+    consent: Boolean(data.consent),
+    createdAt: data.created_at || new Date().toISOString()
+  };
+}
+
+function buildChatLeadFormData(data) {
+  const payload = buildChatLeadPayload(data);
+  const formData = new FormData();
+  formData.append("payload", JSON.stringify(payload));
+  Object.entries(payload).forEach(([key, value]) => {
+    formData.append(key, String(value ?? ""));
+  });
+  if (state.uploadedFile) {
+    formData.append("flyerFile", state.uploadedFile, state.uploadedFile.name);
+  }
+  return formData;
+}
+
+async function submitChatLead(data) {
+  const payload = buildChatLeadPayload(data);
+  const endpoint = window.CHATBOT_ENDPOINT || "";
+  const routeKey = state.intakeType === "free_diagnosis" ? STORAGE_KEY : CONTACT_STORAGE_KEY;
+  const entries = JSON.parse(localStorage.getItem(routeKey) || "[]");
+  entries.unshift({ ...data, payload });
+  localStorage.setItem(routeKey, JSON.stringify(entries));
+
+  if (!endpoint) {
+    console.info("chatbot-lead", payload);
+    return { ok: true, mocked: true };
+  }
+
+  const response = await fetch(endpoint, {
+    method: "POST",
+    body: buildChatLeadFormData(data)
+  });
+  if (!response.ok) {
+    throw new Error(`Submit failed: ${response.status}`);
+  }
+  return response.json().catch(() => ({ ok: true }));
+}
+
+function saveEntry(entry) {
+  const routeKey = state.intakeType === "free_diagnosis" ? STORAGE_KEY : CONTACT_STORAGE_KEY;
+  const entries = JSON.parse(localStorage.getItem(routeKey) || "[]");
+  entries.unshift(entry);
+  localStorage.setItem(routeKey, JSON.stringify(entries));
+}
+
+function buildAdminNotice() {
+  const route = state.intakeType || "free_diagnosis";
+  const title = route === "free_diagnosis" ? "無料チラシ診断 申込" : CHATBOT_V3_ROUTE_LABELS[route];
+  const lines = [`【${title}】`, ""];
+  getSummaryFields(route).forEach((key) => {
+    lines.push(`■ ${CHATBOT_V3_LABELS[key] || key}`);
+    lines.push(displayValue(key));
+    lines.push("");
+  });
+  lines.push("■ 同意確認");
+  lines.push(state.data.consent ? "同意済み" : "未同意");
+  lines.push("");
+  lines.push("■ 申込日時");
+  lines.push(displayValue("created_at"));
+  return lines.join("\n");
+}
+
+function displayValue(key) {
+  const value = state.data[key];
+  if (key === "created_at") {
+    return value ? new Date(value).toLocaleString("ja-JP") : "未入力";
+  }
+  if (key === "consent") {
+    return value ? "同意済み" : "未同意";
+  }
+  if (key === "flyer_file") {
+    if (!value) return "未入力";
+    if (typeof value === "string") return value;
+    return `${value.name}（${formatBytes(value.size)}）`;
+  }
+  return value || "未入力";
+}
+
+function restartChat() {
+  if (!chatMessages) return;
+  state.started = false;
+  state.stage = "initial_concern";
+  state.pendingQuestion = null;
+  state.intakeType = "";
+  state.isSubmitting = false;
+  state.errorMessage = "";
+  state.uploadedFile = null;
+  state.editingField = "";
+  state.data = createChatLeadData();
+  if (flyerFileInput) flyerFileInput.value = "";
   chatMessages.replaceChildren();
   setActions([]);
   openChat();
