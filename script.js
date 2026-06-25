@@ -184,6 +184,8 @@ const quickContactForm = document.getElementById("quickContactForm");
 const contactStatus = document.getElementById("contactStatus");
 const portalApp = document.querySelector(".portal-app");
 const adminApp = document.querySelector(".admin-app");
+const adminLoginForm = document.getElementById("adminLoginForm");
+const adminLoginStatus = document.getElementById("adminLoginStatus");
 
 let selectedPortalProjectId = "";
 let selectedAdminProjectId = "";
@@ -229,7 +231,12 @@ if (portalApp) {
 }
 
 if (adminApp) {
+  initAdminAuth();
   initAdmin();
+}
+
+if (adminLoginForm) {
+  adminLoginForm.addEventListener("submit", handleAdminLogin);
 }
 
 if (flyerFileInput) {
@@ -1034,6 +1041,46 @@ function initAdmin() {
   }
 
   renderAdmin();
+}
+
+function initAdminAuth() {
+  if (sessionStorage.getItem("owner_admin_authenticated") === "true") {
+    document.body.classList.add("admin-authed");
+  }
+}
+
+async function handleAdminLogin(event) {
+  event.preventDefault();
+  const formData = new FormData(event.currentTarget);
+  const ownerId = String(formData.get("owner_id") || "").trim().toLowerCase();
+  const ownerPassword = String(formData.get("owner_password") || "");
+  const credentialHash = await sha256(`${ownerId}:${ownerPassword}`);
+  const expectedId = "info@en-so-bloom.com";
+  const expectedHash = "79d2945fbd550fd49f3c51161e032aafbb5dc6d7d50a611d3bdee0b3f965ee2c";
+
+  if (ownerId === expectedId && credentialHash === expectedHash) {
+    sessionStorage.setItem("owner_admin_authenticated", "true");
+    document.body.classList.add("admin-authed");
+    event.currentTarget.reset();
+    if (adminLoginStatus) {
+      adminLoginStatus.textContent = "ログインしました。";
+      adminLoginStatus.classList.remove("error");
+    }
+    return;
+  }
+
+  if (adminLoginStatus) {
+    adminLoginStatus.textContent = "IDまたはパスワードが違います。";
+    adminLoginStatus.classList.add("error");
+  }
+}
+
+async function sha256(value) {
+  const bytes = new TextEncoder().encode(value);
+  const hash = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(hash))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 function handlePortalRequest(event) {
