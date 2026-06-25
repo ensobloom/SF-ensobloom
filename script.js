@@ -1008,6 +1008,7 @@ function initPortal() {
 }
 
 function initAdmin() {
+  applyAdminView();
   ensurePlatformDemoProjects();
   const projects = loadPlatformProjects();
   selectedAdminProjectId = projects[0]?.id || "";
@@ -1041,6 +1042,21 @@ function initAdmin() {
   }
 
   renderAdmin();
+}
+
+function applyAdminView() {
+  const params = new URLSearchParams(window.location.search);
+  const view = params.get("view") || "dashboard";
+  document.body.dataset.adminView = view;
+
+  document.querySelectorAll("[data-admin-view]").forEach((section) => {
+    const views = String(section.dataset.adminView || "").split(/\s+/);
+    section.hidden = !views.includes(view);
+  });
+
+  document.querySelectorAll("[data-admin-nav]").forEach((link) => {
+    link.classList.toggle("is-active", link.dataset.adminNav === view);
+  });
 }
 
 function initAdminAuth() {

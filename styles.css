@@ -8542,6 +8542,10 @@ a {
   display: none;
 }
 
+.admin-dashboard-page [hidden] {
+  display: none !important;
+}
+
 .admin-login-screen {
   display: grid;
   min-height: 100vh;
