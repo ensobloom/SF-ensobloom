@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/png" href="assets/logo-mark.png" />
-    <link rel="stylesheet" href="styles.css?v=20260623-17" />
+    <link rel="stylesheet" href="styles.css?v=20260625-15" />
   </head>
   <body class="admin-page">
     <header class="site-header" aria-label="サイトヘッダー">
@@ -24,6 +24,7 @@
         </span>
       </a>
       <nav class="site-nav" aria-label="主要ナビゲーション">
+        <a href="#admin-intake">受付一覧</a>
         <a href="#admin-board">案件ボード</a>
         <a href="#admin-delivery">納品登録</a>
         <a href="portal.html">顧客ポータル</a>
@@ -77,6 +78,42 @@
               <span>今月の依頼数</span>
               <strong id="adminMonthlyCount">-</strong>
               <p>制作枠の利用状況確認用</p>
+            </article>
+            <article>
+              <span>無料診断受付</span>
+              <strong id="adminDiagnosisCount">-</strong>
+              <p>LPチャットからの診断申込</p>
+            </article>
+            <article>
+              <span>問い合わせ受付</span>
+              <strong id="adminContactCount">-</strong>
+              <p>直接相談・制作/販促相談</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="admin-intake" class="section admin-intake-section" aria-labelledby="admin-intake-title">
+        <div class="section-inner">
+          <div class="section-heading compact-heading">
+            <p class="eyebrow">Intake</p>
+            <h2 id="admin-intake-title">無料診断・問い合わせ受付</h2>
+            <p>LPチャットや問い合わせフォームから入った内容を確認できます。</p>
+          </div>
+          <div class="admin-intake-grid">
+            <article class="admin-intake-panel">
+              <header>
+                <span>Free Diagnosis</span>
+                <h3>無料チラシ診断</h3>
+              </header>
+              <div class="admin-entry-list" id="adminDiagnosisEntries"></div>
+            </article>
+            <article class="admin-intake-panel">
+              <header>
+                <span>Contact / Production</span>
+                <h3>問い合わせ・制作相談</h3>
+              </header>
+              <div class="admin-entry-list" id="adminContactEntries"></div>
             </article>
           </div>
         </div>
@@ -169,6 +206,6 @@
       </div>
     </footer>
 
-    <script src="script.js?v=20260618-4"></script>
+    <script src="script.js?v=20260625-admin1"></script>
   </body>
 </html>

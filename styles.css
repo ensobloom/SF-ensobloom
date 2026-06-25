@@ -8417,6 +8417,116 @@ a {
   box-shadow: var(--shadow-soft);
 }
 
+.admin-intake-section {
+  background:
+    radial-gradient(circle at 12% 10%, rgba(216, 32, 49, 0.06), transparent 26%),
+    linear-gradient(180deg, #fffdfc 0%, #fff8fa 100%);
+}
+
+.admin-intake-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.admin-intake-panel {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  padding: clamp(18px, 3vw, 26px);
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+
+.admin-intake-panel > header {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-intake-panel > header span {
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.admin-intake-panel > header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.35;
+}
+
+.admin-entry-list {
+  display: grid;
+  gap: 12px;
+  max-height: 620px;
+  overflow: auto;
+}
+
+.admin-entry-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  background: #fffdfc;
+  border: 1px solid rgba(217, 67, 88, 0.14);
+  border-radius: 8px;
+}
+
+.admin-entry-card header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.admin-entry-card strong {
+  color: #2f282d;
+  font-size: 0.98rem;
+  line-height: 1.45;
+}
+
+.admin-entry-card time {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.admin-entry-card dl {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+}
+
+.admin-entry-card dl div {
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr);
+  gap: 10px;
+  padding-top: 7px;
+  border-top: 1px dashed rgba(117, 106, 112, 0.22);
+}
+
+.admin-entry-card dt,
+.admin-entry-card dd {
+  margin: 0;
+  min-width: 0;
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.admin-entry-card dt {
+  color: var(--accent);
+  font-weight: 900;
+}
+
+.admin-entry-card dd {
+  color: var(--muted);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 980px) {
   .site-nav {
     display: none;
@@ -8457,7 +8567,8 @@ a {
   .legal-layout,
   .portal-hero-inner,
   .portal-workspace,
-  .admin-detail-layout {
+  .admin-detail-layout,
+  .admin-intake-grid {
     grid-template-columns: 1fr;
   }
 
@@ -9348,6 +9459,7 @@ a {
   .portal-metrics,
   .delivery-grid,
   .admin-board,
+  .admin-intake-grid,
   .admin-case-meta {
     grid-template-columns: 1fr;
   }

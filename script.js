@@ -1358,16 +1358,111 @@ function renderAdmin() {
     selectedAdminProjectId = projects[0]?.id || "";
   }
   renderAdminMetrics(projects);
+  renderAdminEntries();
   renderAdminBoard(projects);
   renderAdminSelects(projects);
   renderAdminDetail(projects.find((project) => project.id === selectedAdminProjectId));
 }
 
 function renderAdminMetrics(projects) {
+  const diagnosisEntries = loadStoredEntries(STORAGE_KEY);
+  const contactEntries = loadStoredEntries(CONTACT_STORAGE_KEY);
   setText("adminPendingCount", `${projects.filter((project) => project.status === "受付確認中").length}件`);
   setText("adminWorkingCount", `${projects.filter((project) => project.status === "制作中").length}件`);
   setText("adminRevisionCount", `${projects.filter((project) => project.status === "修正対応").length}件`);
   setText("adminMonthlyCount", `${projects.filter((project) => isThisMonth(project.created_at)).length}件`);
+  setText("adminDiagnosisCount", `${diagnosisEntries.length}件`);
+  setText("adminContactCount", `${contactEntries.length}件`);
+}
+
+function renderAdminEntries() {
+  renderAdminEntryList("adminDiagnosisEntries", loadStoredEntries(STORAGE_KEY), [
+    "customer_name",
+    "email",
+    "company_name",
+    "industry",
+    "issue_text",
+    "flyer_purpose",
+    "distribution_method",
+    "distribution_area",
+    "desired_response",
+    "current_response_status",
+    "flyer_file"
+  ]);
+  renderAdminEntryList("adminContactEntries", loadStoredEntries(CONTACT_STORAGE_KEY), [
+    "name",
+    "customer_name",
+    "email",
+    "company_name",
+    "business_type",
+    "industry",
+    "topic",
+    "inquiry_detail",
+    "production_item",
+    "promotion_challenge",
+    "message"
+  ]);
+}
+
+function renderAdminEntryList(elementId, entries, fields) {
+  const list = document.getElementById(elementId);
+  if (!list) return;
+  if (!entries.length) {
+    list.innerHTML = '<div class="empty-state">まだ受付データはありません。</div>';
+    return;
+  }
+
+  list.innerHTML = entries
+    .slice(0, 12)
+    .map((entry) => {
+      const title = entry.customer_name || entry.name || entry.company_name || entry.email || "未入力";
+      const rows = fields
+        .filter((key) => entry[key])
+        .slice(0, 8)
+        .map(
+          (key) => `
+            <div>
+              <dt>${escapeHtml(CHAT_LABELS[key] || labels[key] || contactAdminLabels[key] || key)}</dt>
+              <dd>${escapeHtml(formatAdminEntryValue(entry[key]))}</dd>
+            </div>
+          `
+        )
+        .join("");
+      return `
+        <article class="admin-entry-card">
+          <header>
+            <strong>${escapeHtml(title)}</strong>
+            <time>${escapeHtml(formatDateTime(entry.created_at))}</time>
+          </header>
+          <dl>${rows || '<div><dt>内容</dt><dd>詳細未入力</dd></div>'}</dl>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+function loadStoredEntries(key) {
+  try {
+    return JSON.parse(localStorage.getItem(key) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+const contactAdminLabels = {
+  business_type: "事業形態",
+  name: "お名前",
+  topic: "相談内容",
+  message: "メッセージ"
+};
+
+function formatAdminEntryValue(value) {
+  if (!value) return "-";
+  if (typeof value === "object") {
+    if (value.name) return `${value.name}${value.size ? `（${formatBytes(value.size)}）` : ""}`;
+    return Object.values(value).filter(Boolean).join(" / ");
+  }
+  return value;
 }
 
 function renderAdminBoard(projects) {
