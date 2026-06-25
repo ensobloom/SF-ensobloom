@@ -9314,6 +9314,175 @@ a {
   font-weight: 800;
 }
 
+.admin-sales-section {
+  display: grid;
+  gap: 18px;
+}
+
+.admin-sales-metrics article {
+  background: linear-gradient(180deg, #fff, #f7fffd);
+  border-color: #cbe8e1;
+}
+
+.admin-sales-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.25fr);
+  gap: 18px;
+}
+
+.admin-sales-wide {
+  grid-column: 1 / -1;
+}
+
+.admin-sales-panel {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+.admin-sales-list,
+.admin-payment-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-sales-card,
+.admin-payment-card {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid #dce9e8;
+  border-radius: 6px;
+}
+
+.admin-sales-card header {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.admin-sales-card header span,
+.admin-payment-card span {
+  display: inline-grid;
+  min-height: 28px;
+  padding: 0 10px;
+  place-items: center;
+  color: #145d56;
+  background: #eefaf7;
+  border: 1px solid #cbe8e1;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.admin-payment-card span.unpaid {
+  color: var(--accent);
+  background: #fff4f6;
+  border-color: #f2c7d0;
+}
+
+.admin-payment-card span.paid {
+  color: #145d56;
+}
+
+.admin-sales-card strong,
+.admin-payment-card strong {
+  color: #10264a;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.admin-sales-card dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.admin-sales-card dt,
+.admin-sales-card dd {
+  margin: 0;
+  font-size: 0.74rem;
+  line-height: 1.55;
+}
+
+.admin-sales-card dt {
+  color: #617089;
+  font-weight: 800;
+}
+
+.admin-sales-card dd {
+  color: #10264a;
+  font-weight: 900;
+}
+
+.admin-payment-card {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.admin-payment-card p,
+.admin-payment-card small {
+  margin: 4px 0 0;
+  color: #617089;
+  font-size: 0.74rem;
+  font-weight: 800;
+  line-height: 1.6;
+}
+
+.admin-payment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.admin-payment-actions button {
+  min-height: 32px;
+  padding: 0 10px;
+  color: #10264a;
+  background: #fff;
+  border: 1px solid #ccdbe0;
+  border-radius: 5px;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-payment-flow {
+  display: grid;
+  grid-template-columns: max-content 1fr max-content 1fr max-content 1fr max-content 1fr max-content;
+  gap: 10px;
+  align-items: center;
+  padding: 18px;
+  background: #f8fcfd;
+  border: 1px solid #dce9e8;
+  border-radius: 6px;
+}
+
+.admin-payment-flow span {
+  display: inline-grid;
+  min-height: 36px;
+  padding: 0 12px;
+  place-items: center;
+  color: #10264a;
+  background: #fff;
+  border: 1px solid #ccdbe0;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.admin-payment-flow i {
+  display: block;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), #2bc7bb);
+  border-radius: 999px;
+}
+
 .admin-dashboard-page .admin-board {
   grid-template-columns: repeat(5, minmax(178px, 1fr));
   gap: 10px;
@@ -11548,6 +11717,7 @@ a {
   .admin-dashboard-page .admin-metric-grid,
   .admin-dashboard-page .admin-chat-metrics,
   .admin-dashboard-page .admin-chat-grid,
+  .admin-dashboard-page .admin-sales-grid,
   .admin-dashboard-page .admin-latest-list,
   .admin-dashboard-page .admin-event-list,
   .admin-dashboard-page .admin-grid-2,
@@ -11568,6 +11738,23 @@ a {
   .admin-dashboard-page .admin-event-card span {
     width: max-content;
     padding: 0 12px;
+  }
+
+  .admin-dashboard-page .admin-sales-card header,
+  .admin-dashboard-page .admin-sales-card dl,
+  .admin-dashboard-page .admin-payment-card,
+  .admin-dashboard-page .admin-payment-flow {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-dashboard-page .admin-payment-flow i {
+    width: 2px;
+    height: 20px;
+    justify-self: center;
+  }
+
+  .admin-dashboard-page .admin-payment-actions {
+    justify-content: flex-start;
   }
 
   .admin-dashboard-page .admin-bar-row {

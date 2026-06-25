@@ -2,6 +2,7 @@ const STORAGE_KEY = "free_flyer_diagnosis_entries";
 const CONTACT_STORAGE_KEY = "direct_contact_entries";
 const CHAT_EVENT_STORAGE_KEY = "chatbot_behavior_events";
 const PLATFORM_PROJECT_KEY = "flyer_subscription_projects";
+const SALES_STORAGE_KEY = "flyer_subscription_sales_records";
 const PLATFORM_PLAN = {
   name: "スタンダード",
   monthlyLimit: 5
@@ -1110,6 +1111,7 @@ function initPortal() {
 function initAdmin() {
   applyAdminView();
   ensurePlatformDemoProjects();
+  ensureSalesDemoRecords();
   const projects = loadPlatformProjects();
   selectedAdminProjectId = projects[0]?.id || "";
 
@@ -1139,6 +1141,11 @@ function initAdmin() {
   const deliveryForm = document.getElementById("adminDeliveryForm");
   if (deliveryForm) {
     deliveryForm.addEventListener("submit", handleAdminDelivery);
+  }
+
+  const salesSection = document.getElementById("admin-sales");
+  if (salesSection) {
+    salesSection.addEventListener("click", handleAdminSalesAction);
   }
 
   renderAdmin();
@@ -1524,6 +1531,7 @@ function renderAdmin() {
   renderAdminEntries();
   renderAdminChatAnalytics();
   renderAdminBoard(projects);
+  renderAdminSales();
   renderAdminSelects(projects);
   renderAdminDetail(projects.find((project) => project.id === selectedAdminProjectId));
 }
@@ -1926,6 +1934,228 @@ function getAdminEventLabel(event) {
     chat_restart: "やり直し"
   };
   return labels[event.type] || event.type || "イベント";
+}
+
+function renderAdminSales() {
+  const records = loadSalesRecords();
+  const paidThisMonth = records.filter((record) => record.status === "入金済み" && isThisMonth(record.paid_at || record.created_at));
+  const activeContracts = records.filter((record) => record.billing_type === "月額" && record.contract_status === "契約中");
+  const unpaid = records.filter((record) => record.status !== "入金済み");
+  const monthlyTotal = paidThisMonth.reduce((sum, record) => sum + Number(record.amount || 0), 0);
+  const mrrTotal = activeContracts.reduce((sum, record) => sum + Number(record.amount || 0), 0);
+  const unpaidTotal = unpaid.reduce((sum, record) => sum + Number(record.amount || 0), 0);
+
+  setText("salesMonthlyTotal", formatYen(monthlyTotal));
+  setText("salesMrrTotal", formatYen(mrrTotal));
+  setText("salesUnpaidTotal", formatYen(unpaidTotal));
+  setText("salesActiveCount", `${activeContracts.length}件`);
+  renderSalesContractList(records);
+  renderSalesPaymentList(records);
+}
+
+function renderSalesContractList(records) {
+  const target = document.getElementById("salesContractList");
+  if (!target) return;
+  const contracts = records.filter((record) => record.billing_type === "月額");
+  if (!contracts.length) {
+    target.innerHTML = '<div class="empty-state">まだ契約データはありません。</div>';
+    return;
+  }
+
+  target.innerHTML = contracts
+    .map((record) => `
+      <article class="admin-sales-card">
+        <header>
+          <span>${escapeHtml(record.plan_name)}</span>
+          <strong>${escapeHtml(record.customer_name)}</strong>
+        </header>
+        <dl>
+          <div><dt>月額</dt><dd>${escapeHtml(formatYen(record.amount))}</dd></div>
+          <div><dt>状態</dt><dd>${escapeHtml(record.contract_status)}</dd></div>
+          <div><dt>次回請求</dt><dd>${escapeHtml(formatShortDate(record.next_billing_at))}</dd></div>
+          <div><dt>決済方法</dt><dd>${escapeHtml(record.payment_method)}</dd></div>
+        </dl>
+      </article>
+    `)
+    .join("");
+}
+
+function renderSalesPaymentList(records) {
+  const target = document.getElementById("salesPaymentList");
+  if (!target) return;
+  if (!records.length) {
+    target.innerHTML = '<div class="empty-state">まだ請求データはありません。</div>';
+    return;
+  }
+
+  target.innerHTML = records
+    .slice()
+    .sort((a, b) => adminDateValue(b.created_at) - adminDateValue(a.created_at))
+    .map((record) => `
+      <article class="admin-payment-card">
+        <div>
+          <span class="${record.status === "入金済み" ? "paid" : "unpaid"}">${escapeHtml(record.status)}</span>
+          <strong>${escapeHtml(record.customer_name)} / ${escapeHtml(record.plan_name)}</strong>
+          <p>${escapeHtml(record.billing_type)} ・ ${escapeHtml(formatYen(record.amount))} ・ ${escapeHtml(record.payment_method)}</p>
+          <small>請求日：${escapeHtml(formatShortDate(record.created_at))}${record.paid_at ? ` / 入金日：${escapeHtml(formatShortDate(record.paid_at))}` : ""}</small>
+        </div>
+        <div class="admin-payment-actions">
+          ${record.status === "入金済み" ? "" : `<button type="button" data-sales-action="paid" data-sales-id="${escapeHtml(record.id)}">入金済みにする</button>`}
+          <button type="button" data-sales-action="link" data-sales-id="${escapeHtml(record.id)}">決済リンク</button>
+        </div>
+      </article>
+    `)
+    .join("");
+}
+
+function handleAdminSalesAction(event) {
+  if (event.target.closest("#adminCreatePaymentLink")) {
+    createSalesPaymentRecord();
+    return;
+  }
+  const button = event.target.closest("[data-sales-action]");
+  if (!button) return;
+  const action = button.dataset.salesAction;
+  const id = button.dataset.salesId;
+  if (action === "paid") {
+    updateSalesRecordStatus(id, "入金済み");
+    return;
+  }
+  if (action === "link") {
+    copySalesPaymentLink(id);
+    return;
+  }
+}
+
+function createSalesPaymentRecord() {
+  const records = loadSalesRecords();
+  const now = new Date();
+  const id = `sales-${Date.now()}`;
+  records.unshift({
+    id,
+    customer_name: "新規問い合わせ",
+    plan_name: "決済リンク作成",
+    amount: 0,
+    billing_type: "単発",
+    contract_status: "確認中",
+    status: "未払い",
+    payment_method: "カード決済待ち",
+    payment_url: `https://example.com/pay/${id}`,
+    created_at: now.toISOString(),
+    paid_at: "",
+    next_billing_at: ""
+  });
+  saveSalesRecords(records);
+  renderAdminSales();
+}
+
+function updateSalesRecordStatus(id, status) {
+  const records = loadSalesRecords();
+  const record = records.find((item) => item.id === id);
+  if (!record) return;
+  record.status = status;
+  record.paid_at = status === "入金済み" ? new Date().toISOString() : "";
+  saveSalesRecords(records);
+  renderAdminSales();
+}
+
+async function copySalesPaymentLink(id) {
+  const record = loadSalesRecords().find((item) => item.id === id);
+  if (!record) return;
+  const link = record.payment_url || `https://example.com/pay/${encodeURIComponent(record.id)}`;
+  try {
+    await navigator.clipboard.writeText(link);
+  } catch {
+    console.info("payment-link", link);
+  }
+}
+
+function loadSalesRecords() {
+  try {
+    return JSON.parse(localStorage.getItem(SALES_STORAGE_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveSalesRecords(records) {
+  localStorage.setItem(SALES_STORAGE_KEY, JSON.stringify(records, null, 2));
+}
+
+function ensureSalesDemoRecords() {
+  if (localStorage.getItem(SALES_STORAGE_KEY)) return;
+  const now = new Date();
+  const lastWeek = new Date(now);
+  lastWeek.setDate(now.getDate() - 7);
+  const nextMonth = new Date(now);
+  nextMonth.setMonth(now.getMonth() + 1);
+  const records = [
+    {
+      id: "sales-standard-demo",
+      customer_name: "サンプル整体院",
+      plan_name: "スタンダード",
+      amount: 19800,
+      billing_type: "月額",
+      contract_status: "契約中",
+      status: "入金済み",
+      payment_method: "カード決済",
+      payment_url: "https://example.com/pay/sales-standard-demo",
+      created_at: lastWeek.toISOString(),
+      paid_at: lastWeek.toISOString(),
+      next_billing_at: nextMonth.toISOString()
+    },
+    {
+      id: "sales-light-demo",
+      customer_name: "サンプル飲食店",
+      plan_name: "ライト",
+      amount: 9800,
+      billing_type: "月額",
+      contract_status: "契約中",
+      status: "未払い",
+      payment_method: "カード決済待ち",
+      payment_url: "https://example.com/pay/sales-light-demo",
+      created_at: now.toISOString(),
+      paid_at: "",
+      next_billing_at: nextMonth.toISOString()
+    },
+    {
+      id: "sales-consulting-demo",
+      customer_name: "サンプル工務店",
+      plan_name: "販促伴走プラン",
+      amount: 150000,
+      billing_type: "月額",
+      contract_status: "契約中",
+      status: "請求予定",
+      payment_method: "請求書",
+      payment_url: "https://example.com/pay/sales-consulting-demo",
+      created_at: now.toISOString(),
+      paid_at: "",
+      next_billing_at: nextMonth.toISOString()
+    },
+    {
+      id: "sales-one-shot-demo",
+      customer_name: "サンプル士業事務所",
+      plan_name: "単発チラシ制作",
+      amount: 33000,
+      billing_type: "単発",
+      contract_status: "単発",
+      status: "入金済み",
+      payment_method: "カード決済",
+      payment_url: "https://example.com/pay/sales-one-shot-demo",
+      created_at: now.toISOString(),
+      paid_at: now.toISOString(),
+      next_billing_at: ""
+    }
+  ];
+  saveSalesRecords(records);
+}
+
+function formatYen(value) {
+  return new Intl.NumberFormat("ja-JP", {
+    style: "currency",
+    currency: "JPY",
+    maximumFractionDigits: 0
+  }).format(Number(value || 0));
 }
 
 function adminDateValue(value) {
