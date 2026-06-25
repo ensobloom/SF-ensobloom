@@ -8563,6 +8563,11 @@ a {
   box-shadow: 0 18px 44px rgba(35, 72, 87, 0.12);
 }
 
+.admin-login-card,
+.admin-login-card * {
+  font-weight: 300 !important;
+}
+
 .admin-login-card .brand-mark {
   width: 46px;
   height: 46px;
