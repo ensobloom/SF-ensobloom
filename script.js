@@ -1,5 +1,6 @@
 const STORAGE_KEY = "free_flyer_diagnosis_entries";
 const CONTACT_STORAGE_KEY = "direct_contact_entries";
+const CHAT_EVENT_STORAGE_KEY = "chatbot_behavior_events";
 const PLATFORM_PROJECT_KEY = "flyer_subscription_projects";
 const PLATFORM_PLAN = {
   name: "スタンダード",
@@ -245,6 +246,10 @@ const chatCloseButton = document.querySelector(".chat-close");
 
 if (chatCloseButton && chatShell) {
   chatCloseButton.addEventListener("click", () => {
+    logChatEvent("chat_close", {
+      stage: state.stage || "",
+      intakeType: state.intakeType || ""
+    });
     chatShell.dataset.open = "false";
   });
 }
@@ -302,6 +307,13 @@ if (flyerFileInput) {
       lastModified: file.lastModified
     };
     state.uploadedFile = file;
+    logChatEvent("file_selected", {
+      label: "チラシ画像/PDF選択",
+      fileName: file.name,
+      fileSize: file.size,
+      stage: state.stage || "",
+      intakeType: state.intakeType || ""
+    });
 
     addMessage("user", `ファイルを選択しました：${file.name}`);
     addMessage("bot", "チラシを受け取ったのじゃ。\nありがとうなのじゃ。\n\n診断レポートで見るポイントを整理するために、いくつか質問するのじゃ。");
@@ -1562,25 +1574,47 @@ function formatAdminEntryValue(value) {
 
 function renderAdminChatAnalytics() {
   const leads = getAdminChatLeads();
+  const events = getAdminChatEvents();
   const total = leads.length;
   const diagnosisCount = leads.filter((lead) => lead.route === "free_diagnosis").length;
   const consultCount = leads.filter((lead) => ["production_inquiry", "promotion_consulting", "direct_contact"].includes(lead.route)).length;
   const attachmentCount = leads.filter((lead) => lead.flyer_file || lead.payload?.flyerFileName).length;
+  const openCount = events.filter((event) => event.type === "chat_open" || event.type === "chat_focus").length;
+  const buttonClickCount = events.filter((event) => event.type === "button_click").length;
 
   setText("chatTotalLeads", `${total}件`);
+  setText("chatOpenCount", `${openCount}回`);
+  setText("chatButtonClickCount", `${buttonClickCount}回`);
   setText("chatDiagnosisLeads", `${diagnosisCount}件`);
   setText("chatConsultLeads", `${consultCount}件`);
   setText("chatAttachmentRate", total ? `${Math.round((attachmentCount / total) * 100)}%` : "0%");
 
   renderAdminRouteBreakdown(leads);
-  renderAdminIssueKeywords(leads);
+  renderAdminIssueKeywords(leads, events);
+  renderAdminButtonBreakdown(events);
+  renderAdminConcernList(leads, events);
   renderAdminLatestLeads(leads);
+  renderAdminEventTimeline(events);
 }
 
 function getAdminChatLeads() {
   const diagnosisEntries = loadStoredEntries(STORAGE_KEY).map((entry) => normalizeAdminChatLead(entry, "free_diagnosis"));
   const contactEntries = loadStoredEntries(CONTACT_STORAGE_KEY).map((entry) => normalizeAdminChatLead(entry, getAdminEntryRoute(entry)));
   return [...diagnosisEntries, ...contactEntries].sort((a, b) => adminDateValue(b.created_at) - adminDateValue(a.created_at));
+}
+
+function getAdminChatEvents() {
+  return loadStoredEntries(CHAT_EVENT_STORAGE_KEY)
+    .map((event) => {
+      const routeValue = event.route || event.route_label || "";
+      const route = routeValue ? getAdminRouteKey(routeValue) : "";
+      return {
+        ...event,
+        route,
+        routeLabel: event.route_label || (route ? ADMIN_ROUTE_LABELS[route] : "")
+      };
+    })
+    .sort((a, b) => adminDateValue(b.created_at) - adminDateValue(a.created_at));
 }
 
 function normalizeAdminChatLead(entry, fallbackRoute) {
@@ -1635,7 +1669,7 @@ function renderAdminRouteBreakdown(leads) {
     .join("");
 }
 
-function renderAdminIssueKeywords(leads) {
+function renderAdminIssueKeywords(leads, events = []) {
   const target = document.getElementById("chatIssueKeywords");
   if (!target) return;
   const keywords = [
@@ -1648,7 +1682,11 @@ function renderAdminIssueKeywords(leads) {
     ["制作相談", /制作|作りたい|デザイン|納期/],
     ["販促全体", /販促|集客全体|LINE|SNS|インスタ|LP|導線/]
   ];
-  const text = leads.map((lead) => `${lead.issue_text || ""} ${lead.flyer_purpose || ""} ${lead.topic || ""}`).join("\n");
+  const eventText = events
+    .filter((event) => ["initial_concern", "text_input"].includes(event.type))
+    .map((event) => event.text || "")
+    .join("\n");
+  const text = `${leads.map((lead) => `${lead.issue_text || ""} ${lead.flyer_purpose || ""} ${lead.topic || ""}`).join("\n")}\n${eventText}`;
   const items = keywords
     .map(([label, pattern]) => ({
       label,
@@ -1664,6 +1702,71 @@ function renderAdminIssueKeywords(leads) {
 
   target.innerHTML = items
     .map((item) => `<span>${escapeHtml(item.label)} <b>${item.count}</b></span>`)
+    .join("");
+}
+
+function renderAdminButtonBreakdown(events) {
+  const target = document.getElementById("chatButtonBreakdown");
+  if (!target) return;
+  const buttonEvents = events.filter((event) => event.type === "button_click" && event.label);
+  if (!buttonEvents.length) {
+    target.innerHTML = '<div class="empty-state">まだボタン押下データはありません。</div>';
+    return;
+  }
+  const counts = buttonEvents.reduce((acc, event) => {
+    acc[event.label] = (acc[event.label] || 0) + 1;
+    return acc;
+  }, {});
+  const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const max = Math.max(1, ...rows.map(([, count]) => count));
+  target.innerHTML = rows
+    .map(([label, count]) => `
+      <div class="admin-bar-row">
+        <span>${escapeHtml(label)}</span>
+        <strong>${count}回</strong>
+        <i style="--bar: ${Math.max(6, (count / max) * 100)}%"></i>
+        <small>${Math.round((count / buttonEvents.length) * 100)}%</small>
+      </div>
+    `)
+    .join("");
+}
+
+function renderAdminConcernList(leads, events) {
+  const target = document.getElementById("chatConcernList");
+  if (!target) return;
+  const concerns = [
+    ...events
+      .filter((event) => event.type === "initial_concern" && event.text)
+      .map((event) => ({
+        text: event.text,
+        routeLabel: event.routeLabel || ADMIN_ROUTE_LABELS[event.route] || "未分岐",
+        created_at: event.created_at
+      })),
+    ...leads
+      .filter((lead) => lead.issue_text)
+      .map((lead) => ({
+        text: lead.issue_text,
+        routeLabel: lead.routeLabel,
+        created_at: lead.created_at
+      }))
+  ].sort((a, b) => adminDateValue(b.created_at) - adminDateValue(a.created_at));
+
+  if (!concerns.length) {
+    target.innerHTML = '<div class="empty-state">まだ悩み入力データはありません。</div>';
+    return;
+  }
+
+  target.innerHTML = concerns
+    .slice(0, 8)
+    .map((item) => `
+      <article class="admin-concern-card">
+        <p>${escapeHtml(item.text)}</p>
+        <footer>
+          <span>${escapeHtml(item.routeLabel || "未分岐")}</span>
+          <time>${escapeHtml(formatDateTime(item.created_at))}</time>
+        </footer>
+      </article>
+    `)
     .join("");
 }
 
@@ -1696,6 +1799,46 @@ function renderAdminLatestLeads(leads) {
       `;
     })
     .join("");
+}
+
+function renderAdminEventTimeline(events) {
+  const target = document.getElementById("chatEventTimeline");
+  if (!target) return;
+  if (!events.length) {
+    target.innerHTML = '<div class="empty-state">まだチャット行動ログはありません。</div>';
+    return;
+  }
+  target.innerHTML = events
+    .slice(0, 14)
+    .map((event) => {
+      const label = getAdminEventLabel(event);
+      const detail = event.text || event.label || event.routeLabel || event.file_name || "-";
+      return `
+        <article class="admin-event-card">
+          <span>${escapeHtml(label)}</span>
+          <strong>${escapeHtml(detail)}</strong>
+          <time>${escapeHtml(formatDateTime(event.created_at))}</time>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+function getAdminEventLabel(event) {
+  const labels = {
+    chat_open: "開封",
+    chat_focus: "再表示",
+    chat_started: "開始",
+    chat_close: "閉じる",
+    button_click: "ボタン押下",
+    text_input: "テキスト入力",
+    initial_concern: "最初の悩み",
+    route_selected: "導線選択",
+    file_selected: "ファイル選択",
+    lead_completed: "受付完了",
+    chat_restart: "やり直し"
+  };
+  return labels[event.type] || event.type || "イベント";
 }
 
 function adminDateValue(value) {
@@ -2237,9 +2380,45 @@ function createChatLeadData() {
   };
 }
 
+function createChatEventId() {
+  return `chat-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function logChatEvent(type, detail = {}) {
+  try {
+    const entries = JSON.parse(localStorage.getItem(CHAT_EVENT_STORAGE_KEY) || "[]");
+    const event = {
+      id: createChatEventId(),
+      session_id: state.chatSessionId || "",
+      type,
+      label: detail.label || "",
+      value: detail.value || "",
+      route: detail.route || state.intakeType || "",
+      route_label: detail.routeLabel || (state.intakeType ? CHATBOT_V3_ROUTE_LABELS[state.intakeType] : ""),
+      stage: detail.stage || state.stage || "",
+      text: detail.text || "",
+      file_name: detail.fileName || "",
+      file_size: detail.fileSize || 0,
+      created_at: new Date().toISOString()
+    };
+    entries.unshift(event);
+    localStorage.setItem(CHAT_EVENT_STORAGE_KEY, JSON.stringify(entries.slice(0, 500)));
+  } catch (error) {
+    console.warn("chatbot-event-log-failed", error);
+  }
+}
+
 function openChat() {
   if (!chatShell || !chatInput) return;
+  const wasOpen = chatShell.dataset.open === "true";
+  if (!state.chatSessionId || !state.started) {
+    state.chatSessionId = createChatEventId();
+  }
   chatShell.dataset.open = "true";
+  logChatEvent(wasOpen ? "chat_focus" : "chat_open", {
+    stage: state.stage || "",
+    intakeType: state.intakeType || ""
+  });
   if (!state.started) {
     state.started = true;
     state.stage = "initial_concern";
@@ -3080,6 +3259,7 @@ function openChat() {
     state.errorMessage = "";
     state.uploadedFile = null;
     state.data = createChatLeadData();
+    logChatEvent("chat_started", { stage: "initial_concern" });
     addMessage(
       "bot",
       "こんにちは。\n今のチラシや販促について、気になっていることを教えてほしいのじゃ。\n\nたとえば、\n「チラシを配っても反応がない」\n「作り直す前に見てほしい」\n「制作料金を知りたい」\n「集客全体を相談したい」\nなど、まだ整理できていなくても大丈夫じゃ。"
@@ -3104,6 +3284,14 @@ function setActions(actions = []) {
     button.textContent = config.label;
     if (config.important) button.classList.add("important");
     button.addEventListener("click", () => {
+      logChatEvent("button_click", {
+        label: config.label,
+        value: config.value || config.label,
+        route: config.route || state.intakeType || "",
+        routeLabel: config.route ? CHATBOT_V3_ROUTE_LABELS[config.route] : "",
+        stage: state.stage || "",
+        kind: config.kind || "text"
+      });
       if (config.kind === "file") {
         if (flyerFileInput) flyerFileInput.click();
         return;
@@ -3153,10 +3341,19 @@ function setActions(actions = []) {
 function handleText(rawText) {
   const text = rawText.trim();
   if (!text) return;
+  logChatEvent("text_input", {
+    text,
+    stage: state.stage || "",
+    route: state.intakeType || ""
+  });
 
   if (state.stage === "initial_concern") {
     state.data.initial_concern = text;
     state.data.issue_text = text;
+    logChatEvent("initial_concern", {
+      text,
+      stage: "initial_concern"
+    });
     const route = detectChatRoute(text);
     if (route) {
       startChatRoute(route);
@@ -3309,6 +3506,11 @@ function startChatRoute(route, options = {}) {
   state.intakeType = route;
   state.data.intake_type = CHATBOT_V3_ROUTE_LABELS[route];
   state.editingField = "";
+  logChatEvent("route_selected", {
+    route,
+    routeLabel: CHATBOT_V3_ROUTE_LABELS[route],
+    stage: state.stage || ""
+  });
 
   if (!options.skipIntro) {
     if (route === "free_diagnosis") {
@@ -3539,6 +3741,11 @@ async function completeApplication() {
 
   try {
     await submitChatLead(state.data);
+    logChatEvent("lead_completed", {
+      route: state.intakeType,
+      routeLabel: CHATBOT_V3_ROUTE_LABELS[state.intakeType],
+      stage: "complete"
+    });
   } catch (error) {
     state.isSubmitting = false;
     state.errorMessage = error.message;
@@ -3726,10 +3933,15 @@ function displayValue(key) {
 
 function restartChat() {
   if (!chatMessages) return;
+  logChatEvent("chat_restart", {
+    stage: state.stage || "",
+    route: state.intakeType || ""
+  });
   state.started = false;
   state.stage = "initial_concern";
   state.pendingQuestion = null;
   state.intakeType = "";
+  state.chatSessionId = "";
   state.isSubmitting = false;
   state.errorMessage = "";
   state.uploadedFile = null;

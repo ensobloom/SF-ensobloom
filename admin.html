@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;800;900&family=Noto+Serif+JP:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/png" href="assets/logo-mark.png" />
-    <link rel="stylesheet" href="styles.css?v=20260625-25" />
+    <link rel="stylesheet" href="styles.css?v=20260625-26" />
   </head>
   <body class="admin-page admin-dashboard-page">
     <section class="admin-login-screen" aria-labelledby="admin-login-title">
@@ -241,6 +241,16 @@
                 <p>チャット・フォームから保存された件数</p>
               </article>
               <article>
+                <span>開封数</span>
+                <strong id="chatOpenCount">-</strong>
+                <p>チャットボットを開いた回数</p>
+              </article>
+              <article>
+                <span>ボタン押下</span>
+                <strong id="chatButtonClickCount">-</strong>
+                <p>選択肢・CTAが押された回数</p>
+              </article>
+              <article>
                 <span>無料診断</span>
                 <strong id="chatDiagnosisLeads">-</strong>
                 <p>チラシ画像/PDFの診断受付</p>
@@ -269,10 +279,25 @@
               <p>LPやチャットの改善に使えるキーワードです。</p>
               <div class="admin-chip-list" id="chatIssueKeywords"></div>
             </article>
+            <article class="admin-panel admin-chat-panel">
+              <h2>よく押されたボタン</h2>
+              <p>最初の選択肢や途中CTAの反応を確認します。</p>
+              <div class="admin-bar-list" id="chatButtonBreakdown"></div>
+            </article>
+            <article class="admin-panel admin-chat-panel">
+              <h2>最近入力された悩み</h2>
+              <p>ユーザーが最初に入力した不安や相談内容です。</p>
+              <div class="admin-concern-list" id="chatConcernList"></div>
+            </article>
             <article class="admin-panel admin-chat-panel admin-chat-wide">
               <h2>直近のチャット受付</h2>
               <p>受付内容、メール、相談導線、最初の悩みを確認できます。</p>
               <div class="admin-latest-list" id="chatLatestLeads"></div>
+            </article>
+            <article class="admin-panel admin-chat-panel admin-chat-wide">
+              <h2>チャット行動ログ</h2>
+              <p>開封、ボタン押下、悩み入力、導線選択の流れです。</p>
+              <div class="admin-event-list" id="chatEventTimeline"></div>
             </article>
           </div>
         </section>
@@ -335,6 +360,6 @@
       </main>
     </div>
 
-    <script src="script.js?v=20260625-admin4"></script>
+    <script src="script.js?v=20260625-admin5"></script>
   </body>
 </html>
