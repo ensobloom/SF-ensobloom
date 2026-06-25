@@ -8970,6 +8970,10 @@ a {
   gap: 18px;
 }
 
+.admin-single-grid {
+  grid-template-columns: 1fr;
+}
+
 .admin-dashboard-page .admin-intake-panel {
   padding: 18px;
   box-shadow: 0 8px 22px rgba(35, 72, 87, 0.06);

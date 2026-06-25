@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;800;900&family=Noto+Serif+JP:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/png" href="assets/logo-mark.png" />
-    <link rel="stylesheet" href="styles.css?v=20260625-28" />
+    <link rel="stylesheet" href="styles.css?v=20260625-29" />
   </head>
   <body class="admin-page admin-dashboard-page">
     <section class="admin-login-screen" aria-labelledby="admin-login-title">
@@ -43,7 +43,8 @@
         </a>
         <nav class="admin-side-nav">
           <a class="is-active" data-admin-nav="dashboard" href="admin.html?view=dashboard">ダッシュボード</a>
-          <a data-admin-nav="intake" href="admin.html?view=intake">受付一覧</a>
+          <a data-admin-nav="intake" href="admin.html?view=intake">無料診断受付</a>
+          <a data-admin-nav="inquiry" href="admin.html?view=inquiry">問い合わせ</a>
           <a data-admin-nav="chat" href="admin.html?view=chat">チャットボット分析</a>
           <a data-admin-nav="board" href="admin.html?view=board">案件管理</a>
           <a data-admin-nav="sales" href="admin.html?view=sales">売上管理</a>
@@ -60,7 +61,7 @@
       </aside>
 
       <main class="admin-app admin-main">
-        <header class="admin-topbar" id="admin-dashboard" data-admin-view="dashboard intake chat board sales detail reply">
+        <header class="admin-topbar" id="admin-dashboard" data-admin-view="dashboard intake inquiry chat board sales detail reply">
           <div>
             <h1>ダッシュボード</h1>
             <p>無料診断、問い合わせ、制作案件、納品状況をまとめて確認します。</p>
@@ -179,7 +180,7 @@
           </div>
         </section>
 
-        <section id="admin-intake" class="admin-grid-2" data-admin-view="intake dashboard">
+        <section id="admin-intake" class="admin-grid-2 admin-single-grid" data-admin-view="intake dashboard">
           <article class="admin-panel admin-intake-panel">
             <header>
               <span>Free Diagnosis</span>
@@ -188,11 +189,14 @@
             </header>
             <div class="admin-entry-list" id="adminDiagnosisEntries"></div>
           </article>
+        </section>
+
+        <section id="admin-inquiry" class="admin-grid-2 admin-single-grid" data-admin-view="inquiry dashboard">
           <article class="admin-panel admin-intake-panel">
             <header>
               <span>Contact / Production</span>
-              <h2>問い合わせ・制作相談</h2>
-              <p>問い合わせフォーム、制作相談、販促相談の受付です。</p>
+              <h2>問い合わせ</h2>
+              <p>問い合わせフォーム、制作相談、販促相談の受付内容です。</p>
             </header>
             <div class="admin-entry-list" id="adminContactEntries"></div>
           </article>
@@ -216,7 +220,8 @@
             </div>
           </div>
           <div class="admin-shortcut-grid">
-            <a href="admin.html?view=intake"><span>受付</span><strong>無料診断・問い合わせ</strong><small>申込内容を確認</small></a>
+            <a href="admin.html?view=intake"><span>診断</span><strong>無料診断受付</strong><small>申込内容を確認</small></a>
+            <a href="admin.html?view=inquiry"><span>問合せ</span><strong>問い合わせ管理</strong><small>相談内容を確認</small></a>
             <a href="admin.html?view=chat"><span>分析</span><strong>LPチャットボット分析</strong><small>導線・悩みを確認</small></a>
             <a href="admin.html?view=board"><span>案件</span><strong>案件ステータス管理</strong><small>進行状況を更新</small></a>
             <a href="admin.html?view=sales"><span>売上</span><strong>契約・決済管理</strong><small>入金状況を確認</small></a>
