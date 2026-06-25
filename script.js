@@ -159,6 +159,56 @@ const ADMIN_ROUTE_LABELS = {
   direct_contact: "直接問い合わせ"
 };
 
+const ADMIN_ARCHIVE_FIELDS = {
+  free_diagnosis: [
+    "initial_concern",
+    "flyer_file",
+    "industry",
+    "flyer_purpose",
+    "distribution_method",
+    "distribution_area",
+    "desired_response",
+    "current_response_status",
+    "company_name",
+    "customer_name",
+    "email"
+  ],
+  production_inquiry: [
+    "initial_concern",
+    "inquiry_detail",
+    "production_item",
+    "preferred_timing",
+    "budget",
+    "current_challenge",
+    "company_name",
+    "customer_name",
+    "email",
+    "phone"
+  ],
+  promotion_consulting: [
+    "initial_concern",
+    "promotion_challenge",
+    "promotion_channels",
+    "consulting_scope",
+    "goal",
+    "preferred_timing",
+    "budget",
+    "company_name",
+    "customer_name",
+    "email",
+    "phone"
+  ],
+  direct_contact: [
+    "business_type",
+    "company_name",
+    "industry",
+    "name",
+    "email",
+    "topic",
+    "message"
+  ]
+};
+
 const stageByName = Object.fromEntries(fields.map((field) => [field.stage, field]));
 const fieldOrder = fields.map((field) => field.stage);
 
@@ -1594,6 +1644,7 @@ function renderAdminChatAnalytics() {
   renderAdminButtonBreakdown(events);
   renderAdminConcernList(leads, events);
   renderAdminLatestLeads(leads);
+  renderAdminLeadArchive(leads);
   renderAdminEventTimeline(events);
 }
 
@@ -1795,6 +1846,42 @@ function renderAdminLatestLeads(leads) {
             <div><dt>メール</dt><dd>${escapeHtml(lead.email || "未入力")}</dd></div>
             <div><dt>添付</dt><dd>${escapeHtml(fileText)}</dd></div>
           </dl>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+function renderAdminLeadArchive(leads) {
+  const target = document.getElementById("chatLeadArchive");
+  if (!target) return;
+  if (!leads.length) {
+    target.innerHTML = '<div class="empty-state">まだ問い合わせ・申し込み内容はありません。</div>';
+    return;
+  }
+
+  target.innerHTML = leads
+    .slice(0, 16)
+    .map((lead) => {
+      const name = lead.customer_name || lead.name || lead.company_name || lead.email || "未入力";
+      const fields = ADMIN_ARCHIVE_FIELDS[lead.route] || ADMIN_ARCHIVE_FIELDS.direct_contact;
+      const rows = fields
+        .filter((key) => lead[key])
+        .map((key) => `
+          <div>
+            <dt>${escapeHtml(ADMIN_ENTRY_LABELS[key] || key)}</dt>
+            <dd>${escapeHtml(formatAdminEntryValue(lead[key]))}</dd>
+          </div>
+        `)
+        .join("");
+      return `
+        <article class="admin-archive-card">
+          <header>
+            <span>${escapeHtml(lead.routeLabel)}</span>
+            <strong>${escapeHtml(name)}</strong>
+            <time>${escapeHtml(formatDateTime(lead.created_at))}</time>
+          </header>
+          <dl>${rows || '<div><dt>内容</dt><dd>詳細未入力</dd></div>'}</dl>
         </article>
       `;
     })

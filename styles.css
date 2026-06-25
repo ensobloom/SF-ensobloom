@@ -9172,6 +9172,83 @@ a {
   overflow-wrap: anywhere;
 }
 
+.admin-archive-list {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-archive-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid #dce9e8;
+  border-radius: 6px;
+}
+
+.admin-archive-card header {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.admin-archive-card header span {
+  display: inline-grid;
+  min-height: 28px;
+  padding: 0 10px;
+  place-items: center;
+  color: var(--accent);
+  background: #fff4f6;
+  border: 1px solid #f2c7d0;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.admin-archive-card header strong {
+  color: #10264a;
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
+.admin-archive-card time {
+  color: #617089;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.admin-archive-card dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  margin: 0;
+}
+
+.admin-archive-card dl div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.admin-archive-card dt,
+.admin-archive-card dd {
+  margin: 0;
+  font-size: 0.74rem;
+  line-height: 1.55;
+}
+
+.admin-archive-card dt {
+  color: #617089;
+  font-weight: 800;
+}
+
+.admin-archive-card dd {
+  color: #10264a;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
 .admin-concern-card,
 .admin-event-card {
   display: grid;
@@ -11481,6 +11558,11 @@ a {
   .admin-dashboard-page .admin-event-card {
     grid-template-columns: 1fr;
     align-items: start;
+  }
+
+  .admin-dashboard-page .admin-archive-card header,
+  .admin-dashboard-page .admin-archive-card dl {
+    grid-template-columns: 1fr;
   }
 
   .admin-dashboard-page .admin-event-card span {
