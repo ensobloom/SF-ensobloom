@@ -8577,13 +8577,13 @@ a {
 .admin-login-card p {
   color: var(--accent);
   font-size: 0.78rem;
-  font-weight: 400;
+  font-weight: 300;
 }
 
 .admin-login-card h1 {
   color: #10264a;
   font-size: 1.6rem;
-  font-weight: 400;
+  font-weight: 300;
   line-height: 1.3;
 }
 
@@ -8595,7 +8595,7 @@ a {
 .admin-login-card label span {
   color: #33455f;
   font-size: 0.78rem;
-  font-weight: 400;
+  font-weight: 300;
 }
 
 .admin-login-card input {
@@ -8606,7 +8606,7 @@ a {
   border: 1px solid #ccdbe0;
   border-radius: 6px;
   font: inherit;
-  font-weight: 400;
+  font-weight: 300;
 }
 
 .admin-login-card button {
@@ -8617,13 +8617,13 @@ a {
   border-radius: 6px;
   cursor: pointer;
   font: inherit;
-  font-weight: 400;
+  font-weight: 300;
 }
 
 .admin-login-card small {
   color: #617089;
   font-size: 0.76rem;
-  font-weight: 400;
+  font-weight: 300;
   line-height: 1.6;
 }
 
