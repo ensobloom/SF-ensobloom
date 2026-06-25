@@ -8766,6 +8766,13 @@ a {
   border-bottom: 1px solid #dce9e8;
 }
 
+.admin-topbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .admin-topbar h1 {
   margin: 0;
   color: #10264a;
