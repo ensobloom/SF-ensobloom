@@ -8561,6 +8561,7 @@ a {
   border: 1px solid #dce9e8;
   border-radius: 8px;
   box-shadow: 0 18px 44px rgba(35, 72, 87, 0.12);
+  font-family: "Noto Serif JP", serif;
 }
 
 .admin-login-card,
