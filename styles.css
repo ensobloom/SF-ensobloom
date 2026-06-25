@@ -8531,6 +8531,7 @@ a {
   min-height: 100vh;
   color: #1f2a3d;
   background: #f4faf9;
+  font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
 }
 
 .admin-shell {
@@ -8546,7 +8547,7 @@ a {
   grid-template-rows: auto 1fr auto;
   gap: 18px;
   height: 100vh;
-  padding: 18px 14px;
+  padding: 18px 12px;
   background: #fff;
   border-right: 1px solid #dce9e8;
 }
@@ -8590,12 +8591,12 @@ a {
 .admin-side-nav a {
   display: flex;
   align-items: center;
-  min-height: 36px;
-  padding: 0 10px;
+  min-height: 34px;
+  padding: 0 9px;
   color: #58677d;
   border-radius: 6px;
-  font-size: 0.82rem;
-  font-weight: 900;
+  font-size: 0.78rem;
+  font-weight: 800;
   text-decoration: none;
 }
 
@@ -8643,10 +8644,10 @@ a {
 
 .admin-main {
   display: grid;
-  gap: 20px;
+  gap: 18px;
   align-content: start;
   width: min(100%, 1180px);
-  padding: 24px 24px 48px;
+  padding: 24px 28px 48px;
 }
 
 .admin-topbar {
@@ -8661,7 +8662,7 @@ a {
 .admin-topbar h1 {
   margin: 0;
   color: #10264a;
-  font-size: 1.9rem;
+  font-size: 1.72rem;
   line-height: 1.25;
 }
 
@@ -8669,7 +8670,7 @@ a {
 .admin-panel p {
   margin: 6px 0 0;
   color: #617089;
-  font-size: 0.86rem;
+  font-size: 0.78rem;
   line-height: 1.7;
 }
 
@@ -8682,14 +8683,14 @@ a {
 }
 
 .admin-panel {
-  padding: 18px;
+  padding: 16px;
 }
 
 .admin-panel h2,
 .admin-intake-panel h2 {
   margin: 0;
   color: #10264a;
-  font-size: 1.08rem;
+  font-size: 0.96rem;
   line-height: 1.35;
 }
 
@@ -8733,6 +8734,43 @@ a {
   margin-top: 14px;
 }
 
+.admin-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #33455f;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.admin-period-actions,
+.admin-tab-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-period-actions button,
+.admin-tab-row button {
+  min-height: 34px;
+  padding: 0 14px;
+  color: #10264a;
+  background: #f8fcfd;
+  border: 1px solid #ccdbe0;
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-period-actions button.is-active,
+.admin-tab-row button.is-active {
+  color: #fff;
+  background: #10264a;
+  border-color: #10264a;
+}
+
 .admin-filter-grid label {
   display: grid;
   gap: 6px;
@@ -8756,13 +8794,13 @@ a {
 }
 
 .admin-metric-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .admin-metric-grid article {
-  min-height: 108px;
-  padding: 16px;
+  min-height: 92px;
+  padding: 13px;
   border-color: #dce9e8;
   border-radius: 6px;
   box-shadow: none;
@@ -8770,7 +8808,46 @@ a {
 
 .admin-metric-grid strong {
   color: #10264a;
-  font-size: 1.72rem;
+  font-size: 1.48rem;
+}
+
+.admin-chart-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-chart {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  align-items: end;
+  gap: 12px;
+  min-height: 230px;
+  padding: 20px 18px 12px;
+  background: #f8fcfd;
+  border: 1px solid #ccdbe0;
+  border-radius: 5px;
+}
+
+.admin-chart span {
+  position: relative;
+  display: grid;
+  align-content: end;
+  justify-items: center;
+  height: 180px;
+  color: #617089;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.admin-chart span::before {
+  display: block;
+  width: min(38px, 70%);
+  height: var(--bar);
+  min-height: 6px;
+  margin-bottom: 8px;
+  background: linear-gradient(180deg, #10264a, #2bc7bb);
+  border-radius: 5px 5px 0 0;
+  content: "";
 }
 
 .admin-grid-2 {
@@ -8807,6 +8884,43 @@ a {
   grid-template-columns: repeat(5, minmax(178px, 1fr));
   gap: 10px;
   overflow-x: auto;
+}
+
+.admin-shortcut-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-shortcut-grid a {
+  display: grid;
+  gap: 6px;
+  min-height: 116px;
+  padding: 16px;
+  color: inherit;
+  background: #fff;
+  border: 1px solid #dce9e8;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.admin-shortcut-grid span {
+  color: var(--accent);
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.admin-shortcut-grid strong {
+  color: #10264a;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.admin-shortcut-grid small {
+  color: #617089;
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.6;
 }
 
 .admin-dashboard-page .board-column {
@@ -10998,7 +11112,8 @@ a {
 
   .admin-dashboard-page .admin-filter-grid,
   .admin-dashboard-page .admin-metric-grid,
-  .admin-dashboard-page .admin-grid-2 {
+  .admin-dashboard-page .admin-grid-2,
+  .admin-dashboard-page .admin-shortcut-grid {
     grid-template-columns: 1fr;
   }
 
