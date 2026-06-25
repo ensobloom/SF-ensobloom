@@ -120,6 +120,44 @@ const labels = {
   created_at: "申込日時"
 };
 
+const ADMIN_ENTRY_LABELS = {
+  ...labels,
+  intake_type: "受付種別",
+  initial_concern: "最初の相談内容",
+  target_audience: "想定ターゲット",
+  service_price: "料金・価格帯",
+  strengths: "強み",
+  competitor_difference: "競合との違い",
+  current_offer: "現在の特典・オファー",
+  distribution_volume: "配布予定・配布数",
+  contact_flow: "問い合わせ導線",
+  reference_url: "参考URL",
+  review_focus: "特に見てほしい点",
+  desired_improvement: "希望する改善方向",
+  inquiry_detail: "相談したい内容",
+  production_item: "作りたいもの",
+  preferred_timing: "希望時期",
+  budget: "予算感",
+  current_challenge: "現在の課題",
+  phone: "電話番号",
+  promotion_challenge: "現在の販促課題",
+  promotion_channels: "使っている販促手段",
+  consulting_scope: "相談したい範囲",
+  goal: "目標",
+  business_type: "事業形態",
+  name: "お名前",
+  topic: "相談内容",
+  message: "メッセージ",
+  consent: "同意確認"
+};
+
+const ADMIN_ROUTE_LABELS = {
+  free_diagnosis: "無料チラシ診断",
+  production_inquiry: "制作・料金相談",
+  promotion_consulting: "販促伴走相談",
+  direct_contact: "直接問い合わせ"
+};
+
 const stageByName = Object.fromEntries(fields.map((field) => [field.stage, field]));
 const fieldOrder = fields.map((field) => field.stage);
 
@@ -1422,6 +1460,7 @@ function renderAdmin() {
   }
   renderAdminMetrics(projects);
   renderAdminEntries();
+  renderAdminChatAnalytics();
   renderAdminBoard(projects);
   renderAdminSelects(projects);
   renderAdminDetail(projects.find((project) => project.id === selectedAdminProjectId));
@@ -1485,7 +1524,7 @@ function renderAdminEntryList(elementId, entries, fields) {
         .map(
           (key) => `
             <div>
-              <dt>${escapeHtml(CHAT_LABELS[key] || labels[key] || contactAdminLabels[key] || key)}</dt>
+              <dt>${escapeHtml(ADMIN_ENTRY_LABELS[key] || key)}</dt>
               <dd>${escapeHtml(formatAdminEntryValue(entry[key]))}</dd>
             </div>
           `
@@ -1512,13 +1551,6 @@ function loadStoredEntries(key) {
   }
 }
 
-const contactAdminLabels = {
-  business_type: "事業形態",
-  name: "お名前",
-  topic: "相談内容",
-  message: "メッセージ"
-};
-
 function formatAdminEntryValue(value) {
   if (!value) return "-";
   if (typeof value === "object") {
@@ -1526,6 +1558,149 @@ function formatAdminEntryValue(value) {
     return Object.values(value).filter(Boolean).join(" / ");
   }
   return value;
+}
+
+function renderAdminChatAnalytics() {
+  const leads = getAdminChatLeads();
+  const total = leads.length;
+  const diagnosisCount = leads.filter((lead) => lead.route === "free_diagnosis").length;
+  const consultCount = leads.filter((lead) => ["production_inquiry", "promotion_consulting", "direct_contact"].includes(lead.route)).length;
+  const attachmentCount = leads.filter((lead) => lead.flyer_file || lead.payload?.flyerFileName).length;
+
+  setText("chatTotalLeads", `${total}件`);
+  setText("chatDiagnosisLeads", `${diagnosisCount}件`);
+  setText("chatConsultLeads", `${consultCount}件`);
+  setText("chatAttachmentRate", total ? `${Math.round((attachmentCount / total) * 100)}%` : "0%");
+
+  renderAdminRouteBreakdown(leads);
+  renderAdminIssueKeywords(leads);
+  renderAdminLatestLeads(leads);
+}
+
+function getAdminChatLeads() {
+  const diagnosisEntries = loadStoredEntries(STORAGE_KEY).map((entry) => normalizeAdminChatLead(entry, "free_diagnosis"));
+  const contactEntries = loadStoredEntries(CONTACT_STORAGE_KEY).map((entry) => normalizeAdminChatLead(entry, getAdminEntryRoute(entry)));
+  return [...diagnosisEntries, ...contactEntries].sort((a, b) => adminDateValue(b.created_at) - adminDateValue(a.created_at));
+}
+
+function normalizeAdminChatLead(entry, fallbackRoute) {
+  const payload = entry.payload || {};
+  const route = getAdminRouteKey(entry.intake_type || payload.intakeType || fallbackRoute);
+  return {
+    ...entry,
+    payload,
+    route,
+    routeLabel: ADMIN_ROUTE_LABELS[route] || ADMIN_ROUTE_LABELS.direct_contact,
+    created_at: entry.created_at || payload.createdAt || "",
+    customer_name: entry.customer_name || entry.name || payload.contactName || "",
+    email: entry.email || payload.email || "",
+    company_name: entry.company_name || payload.companyName || "",
+    issue_text: entry.issue_text || entry.initial_concern || entry.inquiry_detail || entry.current_challenge || entry.promotion_challenge || entry.message || payload.issueText || payload.initialConcern || "",
+    flyer_file: entry.flyer_file || (payload.flyerFileName ? { name: payload.flyerFileName, size: payload.flyerFileSize || 0 } : "")
+  };
+}
+
+function getAdminEntryRoute(entry) {
+  return getAdminRouteKey(entry.intake_type || entry.payload?.intakeType || "direct_contact");
+}
+
+function getAdminRouteKey(value) {
+  const route = String(value || "").trim();
+  if (route === "free_diagnosis" || route.includes("無料") || route.includes("診断")) return "free_diagnosis";
+  if (route === "production_inquiry" || route.includes("制作") || route.includes("料金")) return "production_inquiry";
+  if (route === "promotion_consulting" || route.includes("販促") || route.includes("伴走")) return "promotion_consulting";
+  return route === "direct_contact" ? "direct_contact" : "direct_contact";
+}
+
+function renderAdminRouteBreakdown(leads) {
+  const target = document.getElementById("chatRouteBreakdown");
+  if (!target) return;
+  const counts = Object.fromEntries(Object.keys(ADMIN_ROUTE_LABELS).map((key) => [key, 0]));
+  leads.forEach((lead) => {
+    counts[lead.route] = (counts[lead.route] || 0) + 1;
+  });
+  const max = Math.max(1, ...Object.values(counts));
+  target.innerHTML = Object.entries(counts)
+    .map(([route, count]) => {
+      const percent = leads.length ? Math.round((count / leads.length) * 100) : 0;
+      return `
+        <div class="admin-bar-row">
+          <span>${escapeHtml(ADMIN_ROUTE_LABELS[route])}</span>
+          <strong>${count}件</strong>
+          <i style="--bar: ${Math.max(6, (count / max) * 100)}%"></i>
+          <small>${percent}%</small>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function renderAdminIssueKeywords(leads) {
+  const target = document.getElementById("chatIssueKeywords");
+  if (!target) return;
+  const keywords = [
+    ["反応がない", /反応|来ない|こない|ゼロ|少ない/],
+    ["問い合わせ", /問い合わせ|問合せ|相談/],
+    ["予約", /予約/],
+    ["求人・応募", /求人|応募|採用|スタッフ/],
+    ["配布前", /配布前|印刷前|これから|まだ配布/],
+    ["料金", /料金|費用|価格|予算|見積/],
+    ["制作相談", /制作|作りたい|デザイン|納期/],
+    ["販促全体", /販促|集客全体|LINE|SNS|インスタ|LP|導線/]
+  ];
+  const text = leads.map((lead) => `${lead.issue_text || ""} ${lead.flyer_purpose || ""} ${lead.topic || ""}`).join("\n");
+  const items = keywords
+    .map(([label, pattern]) => ({
+      label,
+      count: (text.match(new RegExp(pattern.source, "g")) || []).length
+    }))
+    .filter((item) => item.count > 0)
+    .sort((a, b) => b.count - a.count);
+
+  if (!items.length) {
+    target.innerHTML = '<div class="empty-state">まだ分析できる悩みデータがありません。</div>';
+    return;
+  }
+
+  target.innerHTML = items
+    .map((item) => `<span>${escapeHtml(item.label)} <b>${item.count}</b></span>`)
+    .join("");
+}
+
+function renderAdminLatestLeads(leads) {
+  const target = document.getElementById("chatLatestLeads");
+  if (!target) return;
+  if (!leads.length) {
+    target.innerHTML = '<div class="empty-state">まだチャット受付はありません。</div>';
+    return;
+  }
+  target.innerHTML = leads
+    .slice(0, 8)
+    .map((lead) => {
+      const name = lead.customer_name || lead.company_name || lead.email || "未入力";
+      const issue = lead.issue_text || "相談内容未入力";
+      const fileText = lead.flyer_file ? formatAdminEntryValue(lead.flyer_file) : "添付なし";
+      return `
+        <article class="admin-latest-card">
+          <header>
+            <span>${escapeHtml(lead.routeLabel)}</span>
+            <time>${escapeHtml(formatDateTime(lead.created_at))}</time>
+          </header>
+          <strong>${escapeHtml(name)}</strong>
+          <p>${escapeHtml(issue)}</p>
+          <dl>
+            <div><dt>メール</dt><dd>${escapeHtml(lead.email || "未入力")}</dd></div>
+            <div><dt>添付</dt><dd>${escapeHtml(fileText)}</dd></div>
+          </dl>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+function adminDateValue(value) {
+  const time = Date.parse(value);
+  return Number.isFinite(time) ? time : 0;
 }
 
 function renderAdminBoard(projects) {
