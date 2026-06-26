@@ -8,6 +8,85 @@ const PLATFORM_PLAN = {
   monthlyLimit: 5
 };
 
+const DEFAULT_APP_CONFIG = {
+  backendMode: "local",
+  apiBaseUrl: "",
+  supabaseAnonKey: "",
+  endpoints: {},
+  stripe: {}
+};
+
+function getAppConfig() {
+  const custom = window.EN_SO_BLOOM_CONFIG || {};
+  return {
+    ...DEFAULT_APP_CONFIG,
+    ...custom,
+    endpoints: {
+      ...DEFAULT_APP_CONFIG.endpoints,
+      ...(custom.endpoints || {})
+    },
+    stripe: {
+      ...DEFAULT_APP_CONFIG.stripe,
+      ...(custom.stripe || {})
+    }
+  };
+}
+
+function getEndpoint(key) {
+  const config = getAppConfig();
+  const value = String(config.endpoints?.[key] || "").trim();
+  if (!value) return "";
+  if (/^https?:\/\//.test(value)) return value;
+  const base = String(config.apiBaseUrl || "").trim().replace(/\/$/, "");
+  if (!base) return "";
+  return `${base}/${value.replace(/^\//, "")}`;
+}
+
+function getBackendHeaders(includeJson = true) {
+  const config = getAppConfig();
+  const headers = {};
+  if (includeJson) {
+    headers["Content-Type"] = "application/json";
+  }
+  if (config.supabaseAnonKey) {
+    headers.Authorization = `Bearer ${config.supabaseAnonKey}`;
+    headers.apikey = config.supabaseAnonKey;
+  }
+  return headers;
+}
+
+async function postJsonEndpoint(key, payload) {
+  const endpoint = getEndpoint(key);
+  if (!endpoint) {
+    return { ok: true, skipped: true, localOnly: true };
+  }
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: getBackendHeaders(true),
+    body: JSON.stringify(payload)
+  });
+  if (!response.ok) {
+    throw new Error(`${key} failed: ${response.status}`);
+  }
+  return response.json().catch(() => ({ ok: true }));
+}
+
+async function postFormEndpoint(key, formData, fallbackEndpoint = "") {
+  const endpoint = getEndpoint(key) || fallbackEndpoint;
+  if (!endpoint) {
+    return { ok: true, skipped: true, localOnly: true };
+  }
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: getBackendHeaders(false),
+    body: formData
+  });
+  if (!response.ok) {
+    throw new Error(`${key} failed: ${response.status}`);
+  }
+  return response.json().catch(() => ({ ok: true }));
+}
+
 const initialData = () => ({
   flyer_file: "",
   issue_text: "",
@@ -1016,17 +1095,14 @@ async function handleQuickContact(event) {
     return;
   }
 
-  saveContactEntry(entry);
-  const notice = buildContactNotice(entry);
-
   try {
-    await navigator.clipboard.writeText(notice);
+    await submitContactEntry(entry);
     setContactStatus("お問い合わせ内容を受け付けました。内容を確認し、通常1〜3営業日以内に返信します。", true);
-  } catch {
-    setContactStatus("お問い合わせ内容を受け付けました。内容を確認し、通常1〜3営業日以内に返信します。", true);
+    quickContactForm.reset();
+  } catch (error) {
+    console.error(error);
+    setContactStatus("送信中に問題が起きました。時間をおいてもう一度お試しください。", false);
   }
-
-  quickContactForm.reset();
 }
 
 function setContactStatus(message, success) {
@@ -1043,6 +1119,27 @@ function saveContactEntry(entry) {
   } catch {
     // The visible問い合わせ flow should still complete when browser storage is disabled.
   }
+}
+
+async function submitContactEntry(entry) {
+  saveContactEntry(entry);
+  const notice = buildContactNotice(entry);
+  const result = await postJsonEndpoint("contactInquiry", {
+    source: "contact_page",
+    type: "direct_contact",
+    ...entry,
+    notice
+  });
+
+  if (result.localOnly) {
+    try {
+      await navigator.clipboard.writeText(notice);
+    } catch {
+      console.info("contact-inquiry", notice);
+    }
+  }
+
+  return result;
 }
 
 function buildContactNotice(entry) {
@@ -1196,6 +1293,47 @@ async function handleAdminLogin(event) {
   const formData = new FormData(form);
   const ownerId = String(formData.get("owner_id") || "").trim().toLowerCase();
   const ownerPassword = String(formData.get("owner_password") || "");
+  const loginEndpoint = getEndpoint("adminLogin");
+
+  if (loginEndpoint) {
+    try {
+      const response = await fetch(loginEndpoint, {
+        method: "POST",
+        headers: getBackendHeaders(true),
+        body: JSON.stringify({ ownerId, ownerPassword })
+      });
+      if (!response.ok) {
+        throw new Error(`adminLogin failed: ${response.status}`);
+      }
+      const result = await response.json().catch(() => ({ ok: true }));
+      if (result.ok !== false) {
+        sessionStorage.setItem("owner_admin_authenticated", "true");
+        if (result.token) {
+          sessionStorage.setItem("owner_admin_token", result.token);
+        }
+        document.body.classList.add("admin-authed");
+        form.reset();
+        if (adminLoginStatus) {
+          adminLoginStatus.textContent = "ログインしました。";
+          adminLoginStatus.classList.remove("error");
+        }
+        return;
+      }
+      if (adminLoginStatus) {
+        adminLoginStatus.textContent = "IDまたはパスワードが違います。";
+        adminLoginStatus.classList.add("error");
+      }
+      return;
+    } catch (error) {
+      console.error(error);
+      if (adminLoginStatus) {
+        adminLoginStatus.textContent = "ログインに失敗しました。設定または入力内容をご確認ください。";
+        adminLoginStatus.classList.add("error");
+      }
+      return;
+    }
+  }
+
   const credentialHash = await sha256(`${ownerId}:${ownerPassword}`);
   const expectedId = "info@en-so-bloom.com";
   const expectedHash = "79d2945fbd550fd49f3c51161e032aafbb5dc6d7d50a611d3bdee0b3f965ee2c";
@@ -1225,7 +1363,7 @@ async function sha256(value) {
     .join("");
 }
 
-function handlePortalRequest(event) {
+async function handlePortalRequest(event) {
   event.preventDefault();
   const form = event.currentTarget;
   const formData = new FormData(form);
@@ -1277,11 +1415,20 @@ function handlePortalRequest(event) {
   savePlatformProjects(projects);
   selectedPortalProjectId = project.id;
   form.reset();
-  setInlineStatus("portalRequestStatus", "制作依頼を送信しました。依頼一覧と管理画面に反映されています。", true);
+  try {
+    await postJsonEndpoint("projectRequest", {
+      source: "portal",
+      project
+    });
+    setInlineStatus("portalRequestStatus", "制作依頼を送信しました。依頼一覧と管理画面に反映されています。", true);
+  } catch (error) {
+    console.error(error);
+    setInlineStatus("portalRequestStatus", "ローカルには保存しましたが、本番送信に失敗しました。時間をおいて再送してください。", false);
+  }
   renderPortal();
 }
 
-function handlePortalRevision(event) {
+async function handlePortalRevision(event) {
   event.preventDefault();
   const form = event.currentTarget;
   const projects = loadPlatformProjects();
@@ -1319,11 +1466,21 @@ function handlePortalRevision(event) {
 
   savePlatformProjects(projects);
   form.reset();
-  setInlineStatus("portalRevisionStatus", "修正依頼を送信しました。管理画面にも反映されています。", true);
+  try {
+    await postJsonEndpoint("projectRevision", {
+      source: "portal",
+      projectId: project.id,
+      revision
+    });
+    setInlineStatus("portalRevisionStatus", "修正依頼を送信しました。管理画面にも反映されています。", true);
+  } catch (error) {
+    console.error(error);
+    setInlineStatus("portalRevisionStatus", "ローカルには保存しましたが、本番送信に失敗しました。時間をおいて再送してください。", false);
+  }
   renderPortal();
 }
 
-function handleAdminMessage(event) {
+async function handleAdminMessage(event) {
   event.preventDefault();
   const form = event.currentTarget;
   const formData = new FormData(form);
@@ -1349,11 +1506,21 @@ function handleAdminMessage(event) {
   savePlatformProjects(projects);
   selectedAdminProjectId = project.id;
   form.reset();
-  setInlineStatus("adminMessageStatus", "返信を追加しました。顧客ポータルに表示されます。", true);
+  try {
+    await postJsonEndpoint("adminMessage", {
+      source: "admin",
+      projectId: project.id,
+      message: project.messages[project.messages.length - 1]
+    });
+    setInlineStatus("adminMessageStatus", "返信を追加しました。顧客ポータルに表示されます。", true);
+  } catch (error) {
+    console.error(error);
+    setInlineStatus("adminMessageStatus", "ローカルには保存しましたが、本番送信に失敗しました。", false);
+  }
   renderAdmin();
 }
 
-function handleAdminDelivery(event) {
+async function handleAdminDelivery(event) {
   event.preventDefault();
   const form = event.currentTarget;
   const formData = new FormData(form);
@@ -1393,7 +1560,17 @@ function handleAdminDelivery(event) {
   savePlatformProjects(projects);
   selectedAdminProjectId = project.id;
   form.reset();
-  setInlineStatus("adminDeliveryStatus", "納品を登録しました。顧客ポータルにも反映されています。", true);
+  try {
+    await postJsonEndpoint("adminDelivery", {
+      source: "admin",
+      projectId: project.id,
+      delivery
+    });
+    setInlineStatus("adminDeliveryStatus", "納品を登録しました。顧客ポータルにも反映されています。", true);
+  } catch (error) {
+    console.error(error);
+    setInlineStatus("adminDeliveryStatus", "ローカルには保存しましたが、本番送信に失敗しました。", false);
+  }
   renderAdmin();
 }
 
@@ -2027,9 +2204,9 @@ function renderSalesPaymentList(records) {
     .join("");
 }
 
-function handleAdminSalesAction(event) {
+async function handleAdminSalesAction(event) {
   if (event.target.closest("#adminCreatePaymentLink")) {
-    createSalesPaymentRecord();
+    await createSalesPaymentRecord();
     return;
   }
   const button = event.target.closest("[data-sales-action]");
@@ -2046,11 +2223,13 @@ function handleAdminSalesAction(event) {
   }
 }
 
-function createSalesPaymentRecord() {
+async function createSalesPaymentRecord() {
   const records = loadSalesRecords();
   const now = new Date();
   const id = `sales-${Date.now()}`;
-  records.unshift({
+  const config = getAppConfig();
+  const fallbackPaymentUrl = config.stripe?.standardPaymentLink || `https://example.com/pay/${id}`;
+  const record = {
     id,
     customer_name: "新規問い合わせ",
     plan_name: "決済リンク作成",
@@ -2059,11 +2238,25 @@ function createSalesPaymentRecord() {
     contract_status: "確認中",
     status: "未払い",
     payment_method: "カード決済待ち",
-    payment_url: `https://example.com/pay/${id}`,
+    payment_url: fallbackPaymentUrl,
     created_at: now.toISOString(),
     paid_at: "",
     next_billing_at: ""
-  });
+  };
+
+  try {
+    const result = await postJsonEndpoint("salesCheckout", {
+      source: "admin",
+      record
+    });
+    if (result?.url || result?.payment_url || result?.checkoutUrl) {
+      record.payment_url = result.url || result.payment_url || result.checkoutUrl;
+    }
+  } catch (error) {
+    console.error(error);
+  }
+
+  records.unshift(record);
   saveSalesRecords(records);
   renderAdminSales();
 }
@@ -4604,25 +4797,16 @@ function buildChatLeadFormData(data) {
 
 async function submitChatLead(data) {
   const payload = buildChatLeadPayload(data);
-  const endpoint = window.CHATBOT_ENDPOINT || "";
   const routeKey = state.intakeType === "free_diagnosis" ? STORAGE_KEY : CONTACT_STORAGE_KEY;
   const entries = JSON.parse(localStorage.getItem(routeKey) || "[]");
   entries.unshift({ ...data, payload });
   localStorage.setItem(routeKey, JSON.stringify(entries));
 
-  if (!endpoint) {
+  const result = await postFormEndpoint("chatbotLead", buildChatLeadFormData(data), window.CHATBOT_ENDPOINT || "");
+  if (result.localOnly) {
     console.info("chatbot-lead", payload);
-    return { ok: true, mocked: true };
   }
-
-  const response = await fetch(endpoint, {
-    method: "POST",
-    body: buildChatLeadFormData(data)
-  });
-  if (!response.ok) {
-    throw new Error(`Submit failed: ${response.status}`);
-  }
-  return response.json().catch(() => ({ ok: true }));
+  return result;
 }
 
 function saveEntry(entry) {
