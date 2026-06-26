@@ -6,6 +6,7 @@ window.EN_SO_BLOOM_CONFIG = {
     chatbotLead: "",
     contactInquiry: "",
     customerLogin: "",
+    customerSignup: "",
     adminLogin: "",
     projectRequest: "",
     projectRevision: "",

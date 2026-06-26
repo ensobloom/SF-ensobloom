@@ -7872,6 +7872,47 @@ a {
   color: #25835f;
 }
 
+.portal-login-screen [hidden] {
+  display: none !important;
+}
+
+.portal-auth-switch {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  color: #617089;
+  font-size: 0.82rem;
+}
+
+.portal-auth-switch button {
+  min-height: auto;
+  padding: 0;
+  color: var(--accent-deep);
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.portal-auth-check {
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+}
+
+.portal-auth-check input {
+  min-height: 18px;
+  width: 18px;
+  margin: 2px 0 0;
+  padding: 0;
+}
+
+.portal-auth-check span {
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
 .portal-hero {
   padding: clamp(64px, 8vw, 104px) 0 clamp(42px, 6vw, 72px);
   background:
@@ -8627,6 +8668,17 @@ a {
 }
 
 .admin-login-card input {
+  min-height: 44px;
+  padding: 0 12px;
+  color: #10264a;
+  background: #f9fcfd;
+  border: 1px solid #ccdbe0;
+  border-radius: 6px;
+  font: inherit;
+  font-weight: 300;
+}
+
+.admin-login-card select {
   min-height: 44px;
   padding: 0 12px;
   color: #10264a;

@@ -24,6 +24,7 @@ window.EN_SO_BLOOM_CONFIG = {
     chatbotLead: "/chatbot-lead",
     contactInquiry: "/contact-inquiry",
     customerLogin: "/customer-login",
+    customerSignup: "/customer-signup",
     adminLogin: "/admin-login",
     projectRequest: "/project-request",
     projectRevision: "/project-revision",
@@ -118,6 +119,34 @@ window.EN_SO_BLOOM_CONFIG = {
 ```
 
 `customerLogin` が未設定の場合、制作依頼ポータルはログインできません。GitHub Pages単体では契約者データを安全に守れないため、本番では必ずAPI側で認証してください。
+
+### customerSignup
+
+制作依頼ポータルの新規登録申請を受け取ります。JSONで送信されます。
+
+```json
+{
+  "source": "portal_signup",
+  "companyName": "会社名・店舗名",
+  "contactName": "お名前",
+  "email": "メールアドレス",
+  "desiredPlan": "希望プラン",
+  "password": "入力されたパスワード",
+  "passwordConfirm": "確認用パスワード",
+  "consent": true,
+  "createdAt": "ISO日時"
+}
+```
+
+API側ではパスワードを平文保存せず、必ずハッシュ化または認証サービス側で管理してください。登録申請後すぐにログインさせる場合のみ、以下のように返します。
+
+```json
+{
+  "ok": true,
+  "autoLogin": true,
+  "token": "契約者用JWTなど"
+}
+```
 
 ### projectRequest / projectRevision
 
