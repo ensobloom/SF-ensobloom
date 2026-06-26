@@ -2861,7 +2861,7 @@ function getConcernGuidanceMessage(route) {
   if (route === "promotion_consulting") {
     return "ありがとうございます。\nチラシだけでなく、SNS・LINE・LP・既存客向け案内なども含めて見たい場合は、販促全体の相談として整理できます。\n\n相談受付に進む場合は、下の「販促全体を相談したい」を押してください。";
   }
-  return "ありがとうございます。\n内容を確認しました。まだ受付は開始していません。\n\n無料診断・制作料金・販促相談のうち、進みたいものを選んでください。";
+  return "ご質問ありがとうございます。\n無料診断のこと、制作料金のこと、販促全体の相談など、気になる内容に合わせて案内できます。\n\nこのまま受付に進む場合は、下の近いボタンを選んでください。";
 }
 
 function setActions(actions = []) {
@@ -3012,7 +3012,7 @@ function handleText(rawText) {
 
 function detectChatRoute(text) {
   const value = text.toLowerCase();
-  if (/料金|費用|見積|見積もり|サブスク|月額|納期|急ぎ|作って|制作|依頼|デザイン|プラン/.test(value)) {
+  if (/料金|費用|見積|見積もり|サブスク|月額|納期|何日|何営業日|どのくらい|どれくらい|いつでき|いつまで|急ぎ|作って|制作|依頼|デザイン|プラン/.test(value)) {
     return "production_inquiry";
   }
   if (/集客全体|販促全体|販促相談|伴走|line|sns|instagram|インスタ|lp|ホームページ|毎月|仕組み|売上|導線|チラシ以外|何から改善/.test(value)) {
@@ -3970,7 +3970,7 @@ function handleText(rawText) {
 
 function detectChatRoute(text) {
   const value = text.toLowerCase();
-  if (/料金|費用|見積|見積もり|サブスク|月額|納期|急ぎ|作って|制作|依頼|デザイン|プラン/.test(value)) {
+  if (/料金|費用|見積|見積もり|サブスク|月額|納期|何日|何営業日|どのくらい|どれくらい|いつでき|いつまで|急ぎ|作って|制作|依頼|デザイン|プラン/.test(value)) {
     return "production_inquiry";
   }
   if (/伴走|販促全体|集客全体|販促相談|line|sns|instagram|インスタ|lp|ホームページ|毎月|仕組み|売上|導線|チラシ以外|何から改善/.test(value)) {
@@ -4072,6 +4072,16 @@ function getSupportResponse(text, options = {}) {
     return {
       message:
         "反応や売上の保証はできません。\nただし、反応を落としている可能性があるポイントや、改善の優先順位を整理することはできます。"
+    };
+  }
+  if (/何日|何営業日|どのくらい|どれくらい|いつでき|いつまで|納期|日数|期間/.test(text)) {
+    return {
+      message:
+        "目安として、無料チラシ診断レポートは通常1〜3営業日以内にメールでお送りします。\n\n制作を依頼する場合は、内容がそろってから2〜3営業日での納品が基本です。\n急ぎの場合は、内容と希望日を確認して対応できるかご案内します。",
+      actions: allowRoute ? [
+        { label: "無料診断に進む", kind: "route", route: "free_diagnosis", important: true },
+        { label: "制作納期を相談したい", kind: "route", route: "production_inquiry" }
+      ] : null
     };
   }
   if (/急ぎ|至急|早く|最短/.test(text)) {
