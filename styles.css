@@ -8619,6 +8619,51 @@ a {
   font-weight: 300;
 }
 
+.admin-password-field {
+  position: relative;
+  display: grid;
+}
+
+.admin-password-field input {
+  padding-right: 48px;
+}
+
+.admin-login-card .admin-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  display: grid;
+  width: 34px;
+  min-height: 34px;
+  height: 34px;
+  padding: 0;
+  place-items: center;
+  color: #617089;
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  box-shadow: none;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.admin-login-card .admin-password-toggle:hover,
+.admin-login-card .admin-password-toggle.is-visible {
+  color: var(--accent);
+  background: #fff4f6;
+}
+
+.admin-password-toggle svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .admin-login-card button {
   min-height: 46px;
   color: #fff;

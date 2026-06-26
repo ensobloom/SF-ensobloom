@@ -276,6 +276,8 @@ const portalApp = document.querySelector(".portal-app");
 const adminApp = document.querySelector(".admin-app");
 const adminLoginForm = document.getElementById("adminLoginForm");
 const adminLoginStatus = document.getElementById("adminLoginStatus");
+const adminPasswordInput = document.getElementById("adminPasswordInput");
+const adminPasswordToggle = document.getElementById("adminPasswordToggle");
 
 let selectedPortalProjectId = "";
 let selectedAdminProjectId = "";
@@ -331,6 +333,16 @@ if (adminApp) {
 
 if (adminLoginForm) {
   adminLoginForm.addEventListener("submit", handleAdminLogin);
+}
+
+if (adminPasswordInput && adminPasswordToggle) {
+  adminPasswordToggle.addEventListener("click", () => {
+    const isVisible = adminPasswordInput.type === "text";
+    adminPasswordInput.type = isVisible ? "password" : "text";
+    adminPasswordToggle.classList.toggle("is-visible", !isVisible);
+    adminPasswordToggle.setAttribute("aria-pressed", String(!isVisible));
+    adminPasswordToggle.setAttribute("aria-label", isVisible ? "パスワードを表示" : "パスワードを非表示");
+  });
 }
 
 if (flyerFileInput) {

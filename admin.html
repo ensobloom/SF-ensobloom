@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;800;900&family=Noto+Serif+JP:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/png" href="assets/logo-mark.png" />
-    <link rel="stylesheet" href="styles.css?v=20260625-33" />
+    <link rel="stylesheet" href="styles.css?v=20260626-1" />
   </head>
   <body class="admin-page admin-dashboard-page">
     <section class="admin-login-screen" aria-labelledby="admin-login-title">
@@ -26,7 +26,15 @@
         </label>
         <label>
           <span>パスワード</span>
-          <input name="owner_password" type="password" autocomplete="current-password" required />
+          <div class="admin-password-field">
+            <input id="adminPasswordInput" name="owner_password" type="password" autocomplete="current-password" required />
+            <button class="admin-password-toggle" id="adminPasswordToggle" type="button" aria-label="パスワードを表示" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M2.8 12s3.4-6.2 9.2-6.2 9.2 6.2 9.2 6.2-3.4 6.2-9.2 6.2S2.8 12 2.8 12Z" />
+                <circle cx="12" cy="12" r="2.8" />
+              </svg>
+            </button>
+          </div>
         </label>
         <button type="submit">ログイン</button>
         <small id="adminLoginStatus" aria-live="polite">管理者のみアクセスできます。</small>
@@ -430,6 +438,6 @@
       </main>
     </div>
 
-    <script src="script.js?v=20260625-admin7"></script>
+    <script src="script.js?v=20260626-admin1"></script>
   </body>
 </html>
