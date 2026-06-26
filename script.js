@@ -3296,18 +3296,21 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "target_audience",
       label: "主なターゲット",
+      optional: true,
       question:
         "主に誰に向けたチラシなのか教えてください。\n\n例：30〜50代女性、近隣の戸建て世帯、宴会の幹事、未経験で地元勤務を探す人、などです。"
     },
     {
       name: "distribution_method",
       label: "配布方法",
+      optional: true,
       question:
         "このチラシは、どのように配布している、または配布する予定ですか？\n\n例：ポスティング、新聞折込、店頭配布、手渡し、DM、SNS掲載、既存客への案内などです。"
     },
     {
       name: "distribution_area",
       label: "配布地域",
+      optional: true,
       question:
         "配布する地域も教えてください。\n\n例：〇〇市、〇〇駅周辺、店舗から半径3km以内、〇〇区全域などです。"
     },
@@ -3327,6 +3330,7 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "current_response_status",
       label: "現在の反応状況",
+      optional: true,
       question:
         "今の反応状況も、分かる範囲で教えてください。\n\n例：1,000枚配って問い合わせ1件、ほとんど反応なし、まだ配布前、以前より反応が落ちた、などです。"
     },
@@ -3389,6 +3393,7 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "company_name",
       label: "会社名・店舗名",
+      optional: true,
       question: "診断レポートに記載するため、会社名または店舗名を教えてください。"
     },
     {
@@ -3419,6 +3424,7 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "preferred_timing",
       label: "希望時期",
+      optional: true,
       question:
         "希望の時期はありますか？\n\n例：できるだけ早く、今月中、来月配布予定、まだ未定、などです。"
     },
@@ -3432,12 +3438,14 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "current_challenge",
       label: "現在の課題",
+      optional: true,
       question:
         "今回、制作を考えている背景や課題も教えてください。\n\n例：反応がない、毎回作るのが大変、求人応募を増やしたい、デザインを整えたい、販促物を継続して作りたい、などです。"
     },
     {
       name: "company_name",
       label: "会社名・店舗名",
+      optional: true,
       question: "詳しい案内を送るために、会社名または店舗名を教えてください。"
     },
     {
@@ -3468,6 +3476,7 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "promotion_channels",
       label: "使っている販促手段",
+      optional: true,
       question:
         "今使っている販促手段を教えてください。\n\n例：チラシ、ホームページ、LP、LINE、Instagram、Googleマップ、広告、紹介、店頭告知などです。"
     },
@@ -3480,12 +3489,14 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "goal",
       label: "目標",
+      optional: true,
       question:
         "今後増やしたい成果を教えてください。\n\n例：問い合わせ、予約、来店、求人応募、リピート、客単価、売上などです。"
     },
     {
       name: "preferred_timing",
       label: "希望時期",
+      optional: true,
       question:
         "相談を始めたい時期はありますか？\n\n例：できるだけ早く、今月中、来月から、まだ未定、などです。"
     },
@@ -3499,6 +3510,7 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "company_name",
       label: "会社名・店舗名",
+      optional: true,
       question: "詳しい案内を送るために、会社名または店舗名を教えてください。"
     },
     {
@@ -3965,19 +3977,27 @@ function getCurrentFields() {
   return CHATBOT_V3_FIELDS[state.intakeType] || [];
 }
 
+function getRequiredFields() {
+  return getCurrentFields().filter((field) => !field.optional);
+}
+
 function getCurrentStage() {
   return getCurrentFields().find((field) => field.name === state.stage);
 }
 
 function addProgress(stageName) {
-  const fields = getCurrentFields();
+  const fields = getRequiredFields();
   const index = fields.findIndex((field) => field.name === stageName);
-  if (index < 0) return;
+  if (index < 0) {
+    const stage = getCurrentFields().find((field) => field.name === stageName);
+    if (stage) addMessage("progress", `任意項目：${stage.label}`);
+    return;
+  }
   addMessage("progress", `受付ステップ ${index + 1}/${fields.length}：${fields[index].label}`);
 }
 
 function askNextMissing() {
-  const fields = getCurrentFields();
+  const fields = getRequiredFields();
   const next = fields.find((field) => !state.data[field.name]);
   if (next) {
     askStage(next.name);
@@ -4046,6 +4066,8 @@ function addSummaryMessage() {
   const summary = document.createElement("dl");
   summary.className = "summary-box";
   getSummaryFields(route).forEach((key) => {
+    const field = getCurrentFields().find((item) => item.name === key);
+    if (field?.optional && !state.data[key]) return;
     const row = document.createElement("div");
     const dt = document.createElement("dt");
     const dd = document.createElement("dd");
@@ -4066,6 +4088,10 @@ function showEditFieldChoice() {
   addMessage("bot", "どの項目を修正するか選んでください。");
   const actions = getSummaryFields(route)
     .filter((key) => !["intake_type", "created_at", "consent", "initial_concern"].includes(key))
+    .filter((key) => {
+      const field = getCurrentFields().find((item) => item.name === key);
+      return !field?.optional || state.data[key];
+    })
     .map((key) => ({
       label: CHATBOT_V3_LABELS[key] || key,
       kind: "edit_field",
@@ -4141,7 +4167,7 @@ async function completeApplication() {
 
 function validateChatLead(data) {
   if (!state.intakeType) {
-    return { valid: false, message: "受付種別が選ばれていないです。まず相談内容を選ぶです。" };
+    return { valid: false, message: "受付種別が選ばれていません。まず相談内容を選んでください。" };
   }
   const missing = getCurrentFields().find((field) => !field.optional && !data[field.name]);
   if (missing) {
