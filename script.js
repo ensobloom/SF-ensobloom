@@ -2795,13 +2795,40 @@ function openChat() {
       "こんにちは。\n今のチラシや販促について、気になっていることを教えてください。\n\nたとえば、\n「チラシを配っても反応がない」\n「作り直す前に見てほしい」\n「制作料金を知りたい」\n「集客全体を相談したい」\nなど、まだ整理できていなくても大丈夫です。"
     );
     setActions([
-      "チラシを無料診断してほしい",
-      "制作料金を知りたい",
-      "販促全体を相談したい",
-      "まだよく分からない"
+      { label: "チラシを無料診断してほしい", value: "チラシを無料診断してほしい", important: true },
+      { label: "制作料金を知りたい", value: "制作料金を知りたい" },
+      { label: "よくある質問を見る", kind: "faq_menu" },
+      { label: "直接問い合わせる", kind: "link", href: "contact.html" },
+      { label: "販促全体を相談したい", value: "販促全体を相談したい" },
+      { label: "まだよく分からない", value: "まだよく分からない" }
     ]);
   }
   window.setTimeout(() => chatInput.focus(), 120);
+}
+
+function getChatFaqActions() {
+  return [
+    { label: "本当に無料ですか？", kind: "faq", value: "本当に無料ですか？" },
+    { label: "診断だけでも大丈夫？", kind: "faq", value: "診断だけでも大丈夫ですか？" },
+    { label: "PDFや写真でも大丈夫？", kind: "faq", value: "PDFでも大丈夫ですか？" },
+    { label: "効果は保証されますか？", kind: "faq", value: "効果は保証されますか？" },
+    { label: "料金を知りたい", kind: "faq", value: "料金を知りたい" },
+    { label: "直接問い合わせる", kind: "link", href: "contact.html", important: true }
+  ];
+}
+
+function showChatFaqChoices() {
+  addMessage("bot", "気になる質問を選んでください。無料診断の前に、不安をひとつずつ確認できます。");
+  setActions(getChatFaqActions());
+}
+
+function getAfterFaqActions() {
+  return [
+    { label: "無料診断に進む", kind: "route", route: "free_diagnosis", important: true },
+    { label: "制作料金を相談する", kind: "route", route: "production_inquiry" },
+    { label: "他の質問を見る", kind: "faq_menu" },
+    { label: "直接問い合わせる", kind: "link", href: "contact.html" }
+  ];
 }
 
 function setActions(actions = []) {
@@ -3658,10 +3685,12 @@ function openChat() {
       "こんにちは。\n今のチラシや販促について、気になっていることを教えてください。\n\nたとえば、\n「チラシを配っても反応がない」\n「作り直す前に見てほしい」\n「制作料金を知りたい」\n「集客全体を相談したい」\nなど、まだ整理できていなくても大丈夫です。"
     );
     setActions([
-      "チラシを無料診断してほしい",
-      "制作料金を知りたい",
-      "販促全体を相談したい",
-      "まだよく分からない"
+      { label: "チラシを無料診断してほしい", value: "チラシを無料診断してほしい", important: true },
+      { label: "制作料金を知りたい", value: "制作料金を知りたい" },
+      { label: "よくある質問を見る", kind: "faq_menu" },
+      { label: "直接問い合わせる", kind: "link", href: "contact.html" },
+      { label: "販促全体を相談したい", value: "販促全体を相談したい" },
+      { label: "まだよく分からない", value: "まだよく分からない" }
     ]);
   }
   window.setTimeout(() => chatInput.focus(), 120);
@@ -3692,6 +3721,32 @@ function setActions(actions = []) {
       if (config.kind === "route") {
         addMessage("user", config.label);
         startChatRoute(config.route);
+        return;
+      }
+      if (config.kind === "faq_menu") {
+        addMessage("user", config.label);
+        showChatFaqChoices();
+        return;
+      }
+      if (config.kind === "faq") {
+        addMessage("user", config.label);
+        const support = getSupportResponse(config.value || config.label, { allowRoute: true });
+        if (support) {
+          addMessage("bot", support.message);
+          setActions(support.actions ? [
+            ...support.actions,
+            { label: "他の質問を見る", kind: "faq_menu" },
+            { label: "直接問い合わせる", kind: "link", href: "contact.html" }
+          ] : getAfterFaqActions());
+          return;
+        }
+        addMessage("bot", "確認したい内容を自由に入力してください。内容に合わせてご案内します。");
+        setActions(getAfterFaqActions());
+        return;
+      }
+      if (config.kind === "link") {
+        addMessage("user", config.label);
+        window.location.href = config.href || "contact.html";
         return;
       }
       if (config.kind === "confirm") {
@@ -3950,7 +4005,9 @@ function showRouteChoice() {
   setActions([
     { label: "今のチラシの改善点を無料で見てほしい", kind: "route", route: "free_diagnosis", important: true },
     { label: "チラシ制作や料金について知りたい", kind: "route", route: "production_inquiry" },
-    { label: "チラシ以外も含めて販促全体を相談したい", kind: "route", route: "promotion_consulting" }
+    { label: "チラシ以外も含めて販促全体を相談したい", kind: "route", route: "promotion_consulting" },
+    { label: "よくある質問を見る", kind: "faq_menu" },
+    { label: "直接問い合わせる", kind: "link", href: "contact.html" }
   ]);
 }
 
