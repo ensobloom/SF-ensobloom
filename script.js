@@ -3194,7 +3194,7 @@ function repeatCurrentQuestion() {
   }
   const stage = getCurrentStage();
   if (!stage) return;
-  addMessage("bot", `続けます。\n\n${stage.question}`);
+  addMessage("bot", `受付を続けます。\n\n${stage.question}`);
   if (stage.action) setActions([stage.action]);
 }
 
@@ -3792,6 +3792,11 @@ function setActions(actions = []) {
         window.location.href = config.href || "contact.html";
         return;
       }
+      if (config.kind === "continue") {
+        addMessage("user", config.label);
+        repeatCurrentQuestion();
+        return;
+      }
       if (config.kind === "confirm") {
         addMessage("user", "同意して送信する");
         completeApplication();
@@ -3945,10 +3950,10 @@ function handleText(rawText) {
       return;
     }
     if (support.actions) {
-      setActions(support.actions);
+      setActions(getResumeIntakeActions(support.actions));
       return;
     }
-    repeatCurrentQuestion();
+    setActions(getResumeIntakeActions());
     return;
   }
 
@@ -4244,8 +4249,27 @@ function repeatCurrentQuestion() {
     addMessage("bot", "まず、今のチラシや販促で気になっていることを教えてください。");
     return;
   }
-  addMessage("bot", `続けます。\n\n${stage.question}`);
-  if (stage.action) setActions([stage.action]);
+  addMessage("bot", `受付を続けます。\n\n${stage.question}`);
+  if (stage.action) {
+    setActions([stage.action]);
+  } else if (stage.optional) {
+    setActions(["未定", "なし"]);
+  } else {
+    setActions([]);
+  }
+}
+
+function getResumeIntakeActions(extraActions = []) {
+  const stage = getCurrentStage();
+  const actions = [];
+  if (stage) {
+    actions.push({ label: "受付を続ける", kind: "continue", important: true });
+  }
+  actions.push(
+    { label: "他の質問を見る", kind: "faq_menu" },
+    { label: "直接問い合わせる", kind: "link", href: "contact.html" }
+  );
+  return [...actions, ...extraActions];
 }
 
 function showConsentStep() {
