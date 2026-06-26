@@ -2810,9 +2810,19 @@ function getChatFaqActions() {
   return [
     { label: "本当に無料ですか？", kind: "faq", value: "本当に無料ですか？" },
     { label: "診断だけでも大丈夫？", kind: "faq", value: "診断だけでも大丈夫ですか？" },
+    { label: "営業されませんか？", kind: "faq", value: "診断後に営業されませんか？" },
+    { label: "何日でできますか？", kind: "faq", value: "何日でできますか？" },
     { label: "PDFや写真でも大丈夫？", kind: "faq", value: "PDFでも大丈夫ですか？" },
+    { label: "古いチラシでも大丈夫？", kind: "faq", value: "古いチラシでも大丈夫ですか？" },
+    { label: "配布前でも見てもらえる？", kind: "faq", value: "まだ配布していないチラシでも大丈夫ですか？" },
+    { label: "チラシがまだありません", kind: "faq", value: "チラシがまだありません" },
+    { label: "AIが自動で診断する？", kind: "faq", value: "AIが自動で診断するのですか？" },
     { label: "効果は保証されますか？", kind: "faq", value: "効果は保証されますか？" },
     { label: "料金を知りたい", kind: "faq", value: "料金を知りたい" },
+    { label: "印刷もお願いできますか？", kind: "faq", value: "印刷もお願いできますか？" },
+    { label: "修正はできますか？", kind: "faq", value: "修正はできますか？" },
+    { label: "打ち合わせはありますか？", kind: "faq", value: "打ち合わせはありますか？" },
+    { label: "個人情報は大丈夫？", kind: "faq", value: "個人情報やチラシ画像の扱いは大丈夫ですか？" },
     { label: "直接問い合わせる", kind: "link", href: "contact.html", important: true }
   ];
 }
@@ -4057,9 +4067,51 @@ function getSupportResponse(text, options = {}) {
         "大丈夫です。\n診断だけ利用して、自分で改善する形でも問題ありません。\n必要な方だけ、後から制作や販促相談を利用できます。"
     };
   }
+  if (/営業|売り込|しつこ|勧誘|電話.*来る/.test(text)) {
+    return {
+      message:
+        "無理な営業は行いません。\n無料診断後、必要な方にだけ制作プランや販促相談をご案内します。\nまずは改善ポイントを知る目的だけでも大丈夫です。"
+    };
+  }
+  if (/AI|ＡＩ|人工知能|自動診断|自動で診断|担当者|人が見る|人.*確認/.test(text)) {
+    return {
+      message:
+        "完全自動の診断ではありません。\n7つのAI仙人の分析フレームを活用しながら、担当者がチラシ内容と入力情報を確認して、A4レポートにまとめます。"
+    };
+  }
+  if (/個人情報|プライバシ|情報管理|画像.*扱|データ.*扱|保存/.test(text)) {
+    return {
+      message:
+        "いただいた情報やチラシ画像は、無料診断・問い合わせ対応・レポート作成・必要なご案内のために使用します。\n不要な営業や目的外利用を前提にしたものではありません。詳しくはプライバシーポリシーも確認できます。",
+      actions: allowRoute ? [
+        { label: "プライバシーポリシーを見る", kind: "link", href: "privacy.html" },
+        { label: "直接問い合わせる", kind: "link", href: "contact.html" }
+      ] : null
+    };
+  }
+  if (/配布前|印刷前|まだ配布していない|これから配|配る前/.test(text)) {
+    return {
+      message:
+        "配布前のチラシでも診断できます。\n印刷や配布の前に、見出し・オファー・問い合わせ導線を確認しておくと、無駄を減らせる可能性があります。",
+      actions: allowRoute ? [
+        { label: "無料診断に進む", kind: "route", route: "free_diagnosis", important: true },
+        { label: "直接問い合わせる", kind: "link", href: "contact.html" }
+      ] : null
+    };
+  }
   if (/pdf|PDF|画像|写真/.test(text) && /いい|大丈夫|可能|できますか|可/.test(text)) {
     return {
       message: "PDFでも大丈夫です。\n画像でもPDFでも、内容が読める状態であれば診断できます。"
+    };
+  }
+  if (/チラシ.*(まだない|ない|無い|ありません|未作成)|まだ.*チラシ|これから作|新しく作/.test(text)) {
+    return {
+      message:
+        "チラシがまだない場合も相談できます。\nその場合は無料診断というより、新しく作る前提で目的・ターゲット・載せたい内容を整理する形になります。",
+      actions: allowRoute ? [
+        { label: "制作・料金について相談したい", kind: "route", route: "production_inquiry", important: true },
+        { label: "販促全体を相談したい", kind: "route", route: "promotion_consulting" }
+      ] : null
     };
   }
   if (/古い|昔の|過去/.test(text)) {
@@ -4089,6 +4141,34 @@ function getSupportResponse(text, options = {}) {
       message:
         "急ぎの場合は、制作・料金問い合わせとして受付できます。\n希望時期を確認したうえで、対応できる範囲をご案内します。",
       route: allowRoute ? "production_inquiry" : ""
+    };
+  }
+  if (/印刷|プリント|入稿/.test(text)) {
+    return {
+      message:
+        "基本はデザインデータ納品です。\n印刷が必要な場合は、仕様や枚数を確認したうえで別途ご相談できます。印刷費は月額料金とは別になります。"
+    };
+  }
+  if (/修正|直し|変更|再修正/.test(text)) {
+    return {
+      message:
+        "制作物の修正は、各制作物につき1回まで無料で対応します。\n大きく内容を作り替える場合や追加修正は、内容を確認してご案内します。"
+    };
+  }
+  if (/打ち合わせ|ミーティング|zoom|Zoom|電話相談|オンライン/.test(text)) {
+    return {
+      message:
+        "制作サブスクは基本的にチャット対応です。\n定期ミーティングや販促全体の相談が必要な場合は、販促伴走プランとしてご相談できます。",
+      actions: allowRoute ? [
+        { label: "販促全体を相談したい", kind: "route", route: "promotion_consulting", important: true },
+        { label: "制作・料金について相談したい", kind: "route", route: "production_inquiry" }
+      ] : null
+    };
+  }
+  if (/対応.*(業種|業界)|どんな.*(業種|店|会社)|制作できる|何が作れ|作れるもの|チラシ以外/.test(text)) {
+    return {
+      message:
+        "地域のお店・中小企業向けの販促物に対応しています。\nチラシ、求人チラシ、キャンペーン告知、店頭POP、SNS告知画像、イベント案内、商品紹介、サービス案内などを相談できます。"
     };
   }
   if (/チラシ以外|line|sns|instagram|インスタ|ホームページ|lp|販促全体|集客全体/.test(text)) {
