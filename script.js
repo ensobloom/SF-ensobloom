@@ -335,6 +335,13 @@ if (adminLoginForm) {
   adminLoginForm.addEventListener("submit", handleAdminLogin);
 }
 
+document.querySelectorAll("[data-admin-logout]").forEach((link) => {
+  link.addEventListener("click", () => {
+    sessionStorage.removeItem("owner_admin_authenticated");
+    document.body.classList.remove("admin-authed");
+  });
+});
+
 if (adminPasswordInput && adminPasswordToggle) {
   adminPasswordToggle.addEventListener("click", () => {
     const isVisible = adminPasswordInput.type === "text";
@@ -1185,7 +1192,8 @@ function initAdminAuth() {
 
 async function handleAdminLogin(event) {
   event.preventDefault();
-  const formData = new FormData(event.currentTarget);
+  const form = event.currentTarget;
+  const formData = new FormData(form);
   const ownerId = String(formData.get("owner_id") || "").trim().toLowerCase();
   const ownerPassword = String(formData.get("owner_password") || "");
   const credentialHash = await sha256(`${ownerId}:${ownerPassword}`);
@@ -1195,7 +1203,7 @@ async function handleAdminLogin(event) {
   if (ownerId === expectedId && credentialHash === expectedHash) {
     sessionStorage.setItem("owner_admin_authenticated", "true");
     document.body.classList.add("admin-authed");
-    event.currentTarget.reset();
+    form.reset();
     if (adminLoginStatus) {
       adminLoginStatus.textContent = "ログインしました。";
       adminLoginStatus.classList.remove("error");
@@ -2984,7 +2992,7 @@ function startChatRoute(route, options = {}) {
     if (route === "free_diagnosis") {
       addMessage(
         "bot",
-        "なるほど。\n今のチラシで反応や問い合わせにつながっているか不安ですね。\n\nその場合は、まず無料チラシ診断で、見出し・ターゲット・訴求・オファー・問い合わせ導線などを確認するのがよいです。\n\n診断だけでも無料で利用できるので、まずは今のチラシ画像またはPDFを送ってください。"
+        "なるほど。\n今のチラシで反応や問い合わせにつながっているか不安ですね。\n\nその場合は、まず無料チラシ診断で、見出し・ターゲット・訴求・オファー・問い合わせ導線などを確認できます。\n\n診断だけでも無料で利用できるので、まずは今のチラシ画像またはPDFを送ってください。"
       );
     }
     if (route === "production_inquiry") {
@@ -2993,7 +3001,7 @@ function startChatRoute(route, options = {}) {
     if (route === "promotion_consulting") {
       addMessage(
         "bot",
-        "なるほど。\nチラシ単体というより、集客や販促全体の流れを相談したいですね。\n\nその場合は、販促相談・伴走問い合わせとして受付するのがよいです。"
+        "なるほど。\nチラシ単体というより、集客や販促全体の流れを相談したいですね。\n\n販促相談・伴走問い合わせとして受付できます。"
       );
     }
   }
@@ -3026,7 +3034,7 @@ function getSupportResponse(text) {
   if (/急ぎ|至急|早く|最短/.test(text)) {
     return {
       message:
-        "急ぎの場合は、制作・料金問い合わせとして受付するのがよいです。\n希望時期を確認したうえで、対応できる範囲を案内する流れです。",
+        "急ぎの場合は、制作・料金問い合わせとして受付できます。\n希望時期を確認したうえで、対応できる範囲をご案内します。",
       route: "production_inquiry"
     };
   }
@@ -3046,7 +3054,7 @@ function getSupportResponse(text) {
   if (/診断だけ|見るだけ|依頼しなくても|契約しなくても/.test(text)) {
     return {
       message:
-        "大丈夫です。\n診断だけ利用して、自分で改善する形でも問題ないです。\n必要な人だけ、後から制作や販促相談を利用できる流れです。"
+        "大丈夫です。\n診断だけ利用して、自分で改善する形でも問題ありません。\n必要な方だけ、後から制作や販促相談を利用できます。"
     };
   }
   if (/pdf|PDF/.test(text)) {
@@ -3920,14 +3928,14 @@ function startChatRoute(route, options = {}) {
     if (route === "free_diagnosis") {
       addMessage(
         "bot",
-        "なるほど。\n今のチラシで反応や問い合わせにつながっているか不安ですね。\n\nその場合は、まず無料チラシ診断で、見出し・ターゲット・訴求・オファー・問い合わせ導線などを確認するのがよいです。\n診断だけでも無料で利用できるので、まずは今のチラシ画像またはPDFを送ってください。"
+        "なるほど。\n今のチラシで反応や問い合わせにつながっているか不安ですね。\n\nその場合は、まず無料チラシ診断で、見出し・ターゲット・訴求・オファー・問い合わせ導線などを確認できます。\n診断だけでも無料で利用できるので、まずは今のチラシ画像またはPDFを送ってください。"
       );
     } else if (route === "production_inquiry") {
       addMessage("bot", getChatbotPricingMessage());
     } else {
       addMessage(
         "bot",
-        "なるほど。\nチラシ単体というより、集客や販促全体の流れを相談したいですね。\n販促相談・伴走問い合わせとして受付するのがよいです。"
+        "なるほど。\nチラシ単体というより、集客や販促全体の流れを相談したいですね。\n販促相談・伴走問い合わせとして受付できます。"
       );
     }
   }
@@ -3957,7 +3965,7 @@ function getSupportResponse(text, options = {}) {
   if (/診断だけ|見るだけ|依頼しなくても|契約しなくても/.test(text)) {
     return {
       message:
-        "大丈夫です。\n診断だけ利用して、自分で改善する形でも問題ないです。\n必要な人だけ、後から制作や販促相談を利用できる流れです。"
+        "大丈夫です。\n診断だけ利用して、自分で改善する形でも問題ありません。\n必要な方だけ、後から制作や販促相談を利用できます。"
     };
   }
   if (/pdf|PDF|画像|写真/.test(text) && /いい|大丈夫|可能|できますか|可/.test(text)) {
@@ -3980,14 +3988,14 @@ function getSupportResponse(text, options = {}) {
   if (/急ぎ|至急|早く|最短/.test(text)) {
     return {
       message:
-        "急ぎの場合は、制作・料金問い合わせとして受付するのがよいです。\n希望時期を確認したうえで、対応できる範囲を案内する流れです。",
+        "急ぎの場合は、制作・料金問い合わせとして受付できます。\n希望時期を確認したうえで、対応できる範囲をご案内します。",
       route: allowRoute ? "production_inquiry" : ""
     };
   }
   if (/チラシ以外|line|sns|instagram|インスタ|ホームページ|lp|販促全体|集客全体/.test(text)) {
     return {
       message:
-        "チラシ以外も相談できます。\nLINE、SNS、LP、既存客向け案内なども含めて相談したい場合は、販促相談・伴走問い合わせとして受付するのがよいです。",
+        "チラシ以外も相談できます。\nLINE、SNS、LP、既存客向け案内なども含めて相談したい場合は、販促相談・伴走問い合わせとして受付できます。",
       route: allowRoute ? "promotion_consulting" : ""
     };
   }
