@@ -2795,7 +2795,7 @@ function openChat() {
       "こんにちは。\n今のチラシや販促について、気になっていることを教えてください。\n\nたとえば、\n「チラシを配っても反応がない」\n「作り直す前に見てほしい」\n「制作料金を知りたい」\n「集客全体を相談したい」\nなど、まだ整理できていなくても大丈夫です。"
     );
     setActions([
-      { label: "チラシを無料診断してほしい", value: "チラシを無料診断してほしい", important: true },
+      { label: "チラシを無料診断してほしい", kind: "route", route: "free_diagnosis", important: true },
       { label: "制作料金を知りたい", value: "制作料金を知りたい" },
       { label: "よくある質問を見る", kind: "faq_menu" },
       { label: "直接問い合わせる", kind: "link", href: "contact.html" },
@@ -2829,6 +2829,39 @@ function getAfterFaqActions() {
     { label: "他の質問を見る", kind: "faq_menu" },
     { label: "直接問い合わせる", kind: "link", href: "contact.html" }
   ];
+}
+
+function getPostConcernActions(preferredRoute = "") {
+  const actions = [
+    { label: "チラシを無料診断してほしい", kind: "route", route: "free_diagnosis" },
+    { label: "制作料金を相談したい", kind: "route", route: "production_inquiry" },
+    { label: "販促全体を相談したい", kind: "route", route: "promotion_consulting" },
+    { label: "他の質問を見る", kind: "faq_menu" },
+    { label: "直接問い合わせる", kind: "link", href: "contact.html" }
+  ];
+  const sorted = preferredRoute
+    ? [
+      ...actions.filter((action) => action.route === preferredRoute),
+      ...actions.filter((action) => action.route !== preferredRoute)
+    ]
+    : actions;
+  return sorted.map((action, index) => ({
+    ...action,
+    important: index === 0
+  }));
+}
+
+function getConcernGuidanceMessage(route) {
+  if (route === "free_diagnosis") {
+    return "ありがとうございます。\nチラシの反応が不安な場合、見出し・ターゲット・訴求・オファー・問い合わせ導線のどこかで止まっている可能性があります。\n\nここではまだ受付は開始していません。\n無料診断に進む場合は、下の「チラシを無料診断してほしい」を押してください。";
+  }
+  if (route === "production_inquiry") {
+    return "ありがとうございます。\n制作料金や納期を知りたい場合は、作りたいもの・希望時期・予算感を確認したうえで案内できます。\n\n問い合わせとして受付する場合は、下の「制作料金を相談したい」を押してください。";
+  }
+  if (route === "promotion_consulting") {
+    return "ありがとうございます。\nチラシだけでなく、SNS・LINE・LP・既存客向け案内なども含めて見たい場合は、販促全体の相談として整理できます。\n\n相談受付に進む場合は、下の「販促全体を相談したい」を押してください。";
+  }
+  return "ありがとうございます。\n内容を確認しました。まだ受付は開始していません。\n\n無料診断・制作料金・販促相談のうち、進みたいものを選んでください。";
 }
 
 function setActions(actions = []) {
@@ -3685,7 +3718,7 @@ function openChat() {
       "こんにちは。\n今のチラシや販促について、気になっていることを教えてください。\n\nたとえば、\n「チラシを配っても反応がない」\n「作り直す前に見てほしい」\n「制作料金を知りたい」\n「集客全体を相談したい」\nなど、まだ整理できていなくても大丈夫です。"
     );
     setActions([
-      { label: "チラシを無料診断してほしい", value: "チラシを無料診断してほしい", important: true },
+      { label: "チラシを無料診断してほしい", kind: "route", route: "free_diagnosis", important: true },
       { label: "制作料金を知りたい", value: "制作料金を知りたい" },
       { label: "よくある質問を見る", kind: "faq_menu" },
       { label: "直接問い合わせる", kind: "link", href: "contact.html" },
@@ -3802,24 +3835,23 @@ function handleText(rawText) {
       text,
       stage: "initial_concern"
     });
-    const route = detectChatRoute(text);
-    if (route) {
-      startChatRoute(route);
-      return;
-    }
     const support = getSupportResponse(text);
     if (support) {
       addMessage("bot", support.message);
-      if (support.route) {
-        startChatRoute(support.route, { skipIntro: true });
-        return;
-      }
       if (support.actions) {
-        setActions(support.actions);
+        setActions([
+          ...support.actions,
+          { label: "他の質問を見る", kind: "faq_menu" },
+          { label: "直接問い合わせる", kind: "link", href: "contact.html" }
+        ]);
         return;
       }
+      setActions(getPostConcernActions(support.route || ""));
+      return;
     }
-    showRouteChoice();
+    const route = detectChatRoute(text);
+    addMessage("bot", getConcernGuidanceMessage(route));
+    setActions(getPostConcernActions(route));
     return;
   }
 
