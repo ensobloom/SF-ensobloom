@@ -7854,6 +7854,24 @@ a {
     linear-gradient(180deg, #fff8fa 0%, #fffdfc 36%, #f5fbf7 100%);
 }
 
+.portal-page:not(.portal-authed) .site-header,
+.portal-page:not(.portal-authed) .portal-app,
+.portal-page:not(.portal-authed) .site-footer {
+  display: none;
+}
+
+.portal-page.portal-authed .portal-login-screen {
+  display: none;
+}
+
+.portal-login-screen {
+  font-family: "Noto Serif JP", serif;
+}
+
+.portal-login-card small.success {
+  color: #25835f;
+}
+
 .portal-hero {
   padding: clamp(64px, 8vw, 104px) 0 clamp(42px, 6vw, 72px);
   background:

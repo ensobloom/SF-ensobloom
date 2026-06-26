@@ -5,6 +5,7 @@ window.EN_SO_BLOOM_CONFIG = {
   endpoints: {
     chatbotLead: "",
     contactInquiry: "",
+    customerLogin: "",
     adminLogin: "",
     projectRequest: "",
     projectRevision: "",

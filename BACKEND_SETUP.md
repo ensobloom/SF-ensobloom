@@ -23,6 +23,7 @@ window.EN_SO_BLOOM_CONFIG = {
   endpoints: {
     chatbotLead: "/chatbot-lead",
     contactInquiry: "/contact-inquiry",
+    customerLogin: "/customer-login",
     adminLogin: "/admin-login",
     projectRequest: "/project-request",
     projectRevision: "/project-revision",
@@ -95,6 +96,28 @@ window.EN_SO_BLOOM_CONFIG = {
 ```
 
 現在のフロントにはローカル確認用のログイン判定も残しています。本番では必ず `adminLogin` endpoint を設定してください。
+
+### customerLogin
+
+制作依頼ポータルの契約者ログインをサーバー側で判定します。JSONで送信されます。
+
+```json
+{
+  "customerEmail": "契約者のメールアドレス",
+  "customerPassword": "入力されたパスワード"
+}
+```
+
+成功時は以下のように返します。
+
+```json
+{
+  "ok": true,
+  "token": "契約者用JWTなど"
+}
+```
+
+`customerLogin` が未設定の場合、制作依頼ポータルはログインできません。GitHub Pages単体では契約者データを安全に守れないため、本番では必ずAPI側で認証してください。
 
 ### projectRequest / projectRevision
 

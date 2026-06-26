@@ -3,6 +3,7 @@ const CONTACT_STORAGE_KEY = "direct_contact_entries";
 const CHAT_EVENT_STORAGE_KEY = "chatbot_behavior_events";
 const PLATFORM_PROJECT_KEY = "flyer_subscription_projects";
 const SALES_STORAGE_KEY = "flyer_subscription_sales_records";
+const PORTAL_AUTH_STORAGE_KEY = "customer_portal_authenticated";
 const PLATFORM_PLAN = {
   name: "スタンダード",
   monthlyLimit: 5
@@ -352,6 +353,10 @@ const flyerFileInput = document.getElementById("flyerFileInput");
 const quickContactForm = document.getElementById("quickContactForm");
 const contactStatus = document.getElementById("contactStatus");
 const portalApp = document.querySelector(".portal-app");
+const portalLoginForm = document.getElementById("portalLoginForm");
+const portalLoginStatus = document.getElementById("portalLoginStatus");
+const portalPasswordInput = document.getElementById("portalPasswordInput");
+const portalPasswordToggle = document.getElementById("portalPasswordToggle");
 const adminApp = document.querySelector(".admin-app");
 const adminLoginForm = document.getElementById("adminLoginForm");
 const adminLoginStatus = document.getElementById("adminLoginStatus");
@@ -402,7 +407,11 @@ if (quickContactForm) {
 }
 
 if (portalApp) {
-  initPortal();
+  initPortalGate();
+}
+
+if (portalLoginForm) {
+  portalLoginForm.addEventListener("submit", handlePortalLogin);
 }
 
 if (adminApp) {
@@ -428,6 +437,16 @@ if (adminPasswordInput && adminPasswordToggle) {
     adminPasswordToggle.classList.toggle("is-visible", !isVisible);
     adminPasswordToggle.setAttribute("aria-pressed", String(!isVisible));
     adminPasswordToggle.setAttribute("aria-label", isVisible ? "パスワードを表示" : "パスワードを非表示");
+  });
+}
+
+if (portalPasswordInput && portalPasswordToggle) {
+  portalPasswordToggle.addEventListener("click", () => {
+    const isVisible = portalPasswordInput.type === "text";
+    portalPasswordInput.type = isVisible ? "password" : "text";
+    portalPasswordToggle.classList.toggle("is-visible", !isVisible);
+    portalPasswordToggle.setAttribute("aria-pressed", String(!isVisible));
+    portalPasswordToggle.setAttribute("aria-label", isVisible ? "パスワードを表示" : "パスワードを非表示");
   });
 }
 
@@ -1194,6 +1213,74 @@ function restartChat() {
 function scrollChatToBottom() {
   if (!chatMessages) return;
   chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function initPortalGate() {
+  if (sessionStorage.getItem(PORTAL_AUTH_STORAGE_KEY) === "true") {
+    showPortalApp();
+    return;
+  }
+  document.body.classList.remove("portal-authed");
+}
+
+function showPortalApp() {
+  document.body.classList.add("portal-authed");
+  if (portalApp?.dataset.initialized === "true") return;
+  initPortal();
+  if (portalApp) {
+    portalApp.dataset.initialized = "true";
+  }
+}
+
+async function handlePortalLogin(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const formData = new FormData(form);
+  const customerEmail = String(formData.get("customer_email") || "").trim().toLowerCase();
+  const customerPassword = String(formData.get("customer_password") || "");
+
+  if (!isValidEmail(customerEmail) || !customerPassword) {
+    setPortalLoginStatus("メールアドレスとパスワードを入力してください。", false);
+    return;
+  }
+
+  const loginEndpoint = getEndpoint("customerLogin");
+  if (!loginEndpoint) {
+    setPortalLoginStatus("制作依頼ログインは本番認証APIの設定後に利用できます。", false);
+    return;
+  }
+
+  try {
+    const response = await fetch(loginEndpoint, {
+      method: "POST",
+      headers: getBackendHeaders(true),
+      body: JSON.stringify({ customerEmail, customerPassword })
+    });
+    if (!response.ok) {
+      throw new Error(`customerLogin failed: ${response.status}`);
+    }
+    const result = await response.json().catch(() => ({ ok: true }));
+    if (result.ok === false) {
+      setPortalLoginStatus("メールアドレスまたはパスワードが違います。", false);
+      return;
+    }
+    sessionStorage.setItem(PORTAL_AUTH_STORAGE_KEY, "true");
+    if (result.token) {
+      sessionStorage.setItem("customer_portal_token", result.token);
+    }
+    form.reset();
+    showPortalApp();
+  } catch (error) {
+    console.error(error);
+    setPortalLoginStatus("ログインに失敗しました。入力内容または本番認証設定をご確認ください。", false);
+  }
+}
+
+function setPortalLoginStatus(message, success) {
+  if (!portalLoginStatus) return;
+  portalLoginStatus.textContent = message;
+  portalLoginStatus.classList.toggle("error", !success);
+  portalLoginStatus.classList.toggle("success", Boolean(success));
 }
 
 function initPortal() {

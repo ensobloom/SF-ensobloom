@@ -12,9 +12,35 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/png" href="assets/logo-mark.png" />
-    <link rel="stylesheet" href="styles.css?v=20260623-17" />
+    <link rel="stylesheet" href="styles.css?v=20260627-portal-login1" />
   </head>
   <body class="portal-page">
+    <section class="admin-login-screen portal-login-screen" aria-labelledby="portal-login-title">
+      <form class="admin-login-card portal-login-card" id="portalLoginForm">
+        <span class="brand-mark"><img src="assets/logo-mark.png" alt="" /></span>
+        <p>Client Workspace</p>
+        <h1 id="portal-login-title">制作依頼ログイン</h1>
+        <label>
+          <span>メールアドレス</span>
+          <input name="customer_email" type="email" autocomplete="email" required />
+        </label>
+        <label>
+          <span>パスワード</span>
+          <div class="admin-password-field">
+            <input id="portalPasswordInput" name="customer_password" type="password" autocomplete="current-password" required />
+            <button class="admin-password-toggle" id="portalPasswordToggle" type="button" aria-label="パスワードを表示" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M2.8 12s3.4-6.2 9.2-6.2 9.2 6.2 9.2 6.2-3.4 6.2-9.2 6.2S2.8 12 2.8 12Z" />
+                <circle cx="12" cy="12" r="2.8" />
+              </svg>
+            </button>
+          </div>
+        </label>
+        <button type="submit">ログイン</button>
+        <small id="portalLoginStatus" aria-live="polite">契約者専用の制作依頼・納品確認ページです。</small>
+      </form>
+    </section>
+
     <header class="site-header" aria-label="サイトヘッダー">
       <a class="brand" href="index.html#top" aria-label="無料チラシ診断 トップ">
         <span class="brand-mark"><img src="assets/logo-mark.png" alt="" /></span>
@@ -199,7 +225,7 @@
       </div>
     </footer>
 
-    <script src="app-config.js?v=20260626-backend1"></script>
-    <script src="script.js?v=20260626-backend1"></script>
+    <script src="app-config.js?v=20260627-portal-login1"></script>
+    <script src="script.js?v=20260627-portal-login1"></script>
   </body>
 </html>
