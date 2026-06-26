@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;800;900&family=Noto+Serif+JP:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/png" href="assets/logo-mark.png" />
-    <link rel="stylesheet" href="styles.css?v=20260626-1" />
+    <link rel="stylesheet" href="styles.css?v=20260626-2" />
   </head>
   <body class="admin-page admin-dashboard-page">
     <section class="admin-login-screen" aria-labelledby="admin-login-title">
@@ -132,32 +132,32 @@
           <div class="portal-metrics admin-metric-grid">
             <article>
               <span>受付確認中</span>
-              <strong id="adminPendingCount">-</strong>
+              <strong id="adminPendingCount">0件</strong>
               <p>内容確認が必要な依頼</p>
             </article>
             <article>
               <span>制作中</span>
-              <strong id="adminWorkingCount">-</strong>
+              <strong id="adminWorkingCount">0件</strong>
               <p>初稿制作中の案件</p>
             </article>
             <article>
               <span>修正対応</span>
-              <strong id="adminRevisionCount">-</strong>
+              <strong id="adminRevisionCount">0件</strong>
               <p>修正依頼が届いている案件</p>
             </article>
             <article>
               <span>今月の依頼数</span>
-              <strong id="adminMonthlyCount">-</strong>
+              <strong id="adminMonthlyCount">0件</strong>
               <p>制作枠の利用状況確認用</p>
             </article>
             <article>
               <span>無料診断受付</span>
-              <strong id="adminDiagnosisCount">-</strong>
+              <strong id="adminDiagnosisCount">0件</strong>
               <p>LPチャットからの診断申込</p>
             </article>
             <article>
               <span>問い合わせ受付</span>
-              <strong id="adminContactCount">-</strong>
+              <strong id="adminContactCount">0件</strong>
               <p>直接相談・制作/販促相談</p>
             </article>
           </div>
@@ -177,13 +177,13 @@
             <button type="button">制作案件</button>
           </div>
           <div class="admin-chart" aria-hidden="true">
-            <span style="--bar: 82%"><b>6/19</b></span>
-            <span style="--bar: 28%"><b>6/20</b></span>
-            <span style="--bar: 46%"><b>6/21</b></span>
-            <span style="--bar: 8%"><b>6/22</b></span>
-            <span style="--bar: 12%"><b>6/23</b></span>
-            <span style="--bar: 18%"><b>6/24</b></span>
-            <span style="--bar: 34%"><b>6/25</b></span>
+            <span style="--bar: 0%"><b>6/19</b></span>
+            <span style="--bar: 0%"><b>6/20</b></span>
+            <span style="--bar: 0%"><b>6/21</b></span>
+            <span style="--bar: 0%"><b>6/22</b></span>
+            <span style="--bar: 0%"><b>6/23</b></span>
+            <span style="--bar: 0%"><b>6/24</b></span>
+            <span style="--bar: 0%"><b>6/25</b></span>
           </div>
         </section>
 
@@ -248,32 +248,32 @@
             <div class="admin-chat-metrics">
               <article>
                 <span>総受付数</span>
-                <strong id="chatTotalLeads">-</strong>
+                <strong id="chatTotalLeads">0件</strong>
                 <p>チャット・フォームから保存された件数</p>
               </article>
               <article>
                 <span>開封数</span>
-                <strong id="chatOpenCount">-</strong>
+                <strong id="chatOpenCount">0回</strong>
                 <p>チャットボットを開いた回数</p>
               </article>
               <article>
                 <span>ボタン押下</span>
-                <strong id="chatButtonClickCount">-</strong>
+                <strong id="chatButtonClickCount">0回</strong>
                 <p>選択肢・CTAが押された回数</p>
               </article>
               <article>
                 <span>無料診断</span>
-                <strong id="chatDiagnosisLeads">-</strong>
+                <strong id="chatDiagnosisLeads">0件</strong>
                 <p>チラシ画像/PDFの診断受付</p>
               </article>
               <article>
                 <span>制作・販促相談</span>
-                <strong id="chatConsultLeads">-</strong>
+                <strong id="chatConsultLeads">0件</strong>
                 <p>制作料金・販促伴走への相談</p>
               </article>
               <article>
                 <span>添付率</span>
-                <strong id="chatAttachmentRate">-</strong>
+                <strong id="chatAttachmentRate">0%</strong>
                 <p>チラシ画像/PDFがある受付割合</p>
               </article>
             </div>
@@ -330,22 +330,22 @@
             <div class="admin-chat-metrics admin-sales-metrics">
               <article>
                 <span>今月売上</span>
-                <strong id="salesMonthlyTotal">-</strong>
+                <strong id="salesMonthlyTotal">¥0</strong>
                 <p>入金済みの売上合計</p>
               </article>
               <article>
                 <span>MRR</span>
-                <strong id="salesMrrTotal">-</strong>
+                <strong id="salesMrrTotal">¥0</strong>
                 <p>継続契約の月額売上</p>
               </article>
               <article>
                 <span>未払い</span>
-                <strong id="salesUnpaidTotal">-</strong>
+                <strong id="salesUnpaidTotal">¥0</strong>
                 <p>未入金・確認待ち</p>
               </article>
               <article>
                 <span>契約中</span>
-                <strong id="salesActiveCount">-</strong>
+                <strong id="salesActiveCount">0件</strong>
                 <p>継続プラン利用中</p>
               </article>
             </div>
@@ -438,6 +438,6 @@
       </main>
     </div>
 
-    <script src="script.js?v=20260626-admin1"></script>
+    <script src="script.js?v=20260626-admin2"></script>
   </body>
 </html>

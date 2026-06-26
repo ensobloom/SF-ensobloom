@@ -1122,9 +1122,8 @@ function initPortal() {
 
 function initAdmin() {
   applyAdminView();
-  ensurePlatformDemoProjects();
-  ensureSalesDemoRecords();
-  const projects = loadPlatformProjects();
+  clearAdminPrototypeDemoData();
+  const projects = loadAdminProjects();
   selectedAdminProjectId = projects[0]?.id || "";
 
   const board = document.getElementById("adminBoard");
@@ -1535,7 +1534,7 @@ function renderPortalDeliveries(projects) {
 }
 
 function renderAdmin() {
-  const projects = loadPlatformProjects();
+  const projects = loadAdminProjects();
   if (!projects.some((project) => project.id === selectedAdminProjectId)) {
     selectedAdminProjectId = projects[0]?.id || "";
   }
@@ -1949,7 +1948,7 @@ function getAdminEventLabel(event) {
 }
 
 function renderAdminSales() {
-  const records = loadSalesRecords();
+  const records = loadAdminSalesRecords();
   const paidThisMonth = records.filter((record) => record.status === "入金済み" && isThisMonth(record.paid_at || record.created_at));
   const activeContracts = records.filter((record) => record.billing_type === "月額" && record.contract_status === "契約中");
   const unpaid = records.filter((record) => record.status !== "入金済み");
@@ -2090,8 +2089,38 @@ function loadSalesRecords() {
   }
 }
 
+function loadAdminSalesRecords() {
+  return loadSalesRecords().filter((record) => !isDemoSalesRecord(record));
+}
+
 function saveSalesRecords(records) {
   localStorage.setItem(SALES_STORAGE_KEY, JSON.stringify(records, null, 2));
+}
+
+function loadAdminProjects() {
+  return loadPlatformProjects().filter((project) => !isDemoProject(project));
+}
+
+function clearAdminPrototypeDemoData() {
+  const projects = loadPlatformProjects();
+  const cleanProjects = projects.filter((project) => !isDemoProject(project));
+  if (cleanProjects.length !== projects.length) {
+    savePlatformProjects(cleanProjects);
+  }
+
+  const records = loadSalesRecords();
+  const cleanRecords = records.filter((record) => !isDemoSalesRecord(record));
+  if (cleanRecords.length !== records.length) {
+    saveSalesRecords(cleanRecords);
+  }
+}
+
+function isDemoProject(project) {
+  return String(project?.id || "").startsWith("demo-") || String(project?.customer_name || "").startsWith("サンプル");
+}
+
+function isDemoSalesRecord(record) {
+  return String(record?.id || "").includes("-demo") || String(record?.customer_name || "").startsWith("サンプル");
 }
 
 function ensureSalesDemoRecords() {
