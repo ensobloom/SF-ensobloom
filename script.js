@@ -3022,7 +3022,7 @@ function handleText(rawText) {
 
 function detectChatRoute(text) {
   const value = text.toLowerCase();
-  if (/料金|費用|見積|見積もり|サブスク|月額|納期|何日|何営業日|どのくらい|どれくらい|いつでき|いつまで|急ぎ|作って|制作|依頼|デザイン|プラン/.test(value)) {
+  if (/料金|値段|金額|費用|価格|代金|いくら|月いくら|料金表|見積|見積もり|サブスク|月額|納期|何日|何営業日|どのくらい|どれくらい|いつでき|いつまで|急ぎ|作って|制作|依頼|デザイン|プラン/.test(value)) {
     return "production_inquiry";
   }
   if (/集客全体|販促全体|販促相談|伴走|line|sns|instagram|インスタ|lp|ホームページ|毎月|仕組み|売上|導線|チラシ以外|何から改善/.test(value)) {
@@ -3985,7 +3985,7 @@ function handleText(rawText) {
 
 function detectChatRoute(text) {
   const value = text.toLowerCase();
-  if (/料金|費用|見積|見積もり|サブスク|月額|納期|何日|何営業日|どのくらい|どれくらい|いつでき|いつまで|急ぎ|作って|制作|依頼|デザイン|プラン/.test(value)) {
+  if (/料金|値段|金額|費用|価格|代金|いくら|月いくら|料金表|見積|見積もり|サブスク|月額|納期|何日|何営業日|どのくらい|どれくらい|いつでき|いつまで|急ぎ|作って|制作|依頼|デザイン|プラン/.test(value)) {
     return "production_inquiry";
   }
   if (/伴走|販促全体|集客全体|販促相談|line|sns|instagram|インスタ|lp|ホームページ|毎月|仕組み|売上|導線|チラシ以外|何から改善/.test(value)) {
@@ -4183,7 +4183,7 @@ function getSupportResponse(text, options = {}) {
       route: allowRoute ? "promotion_consulting" : ""
     };
   }
-  if (/料金|いくら|費用|価格|プラン/.test(text)) {
+  if (/料金|値段|金額|費用|価格|代金|いくら|月いくら|料金表|プラン|サブスク|月額/.test(text)) {
     return {
       message: getChatbotPricingMessage(allowRoute),
       actions: allowRoute ? [
