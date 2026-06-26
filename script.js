@@ -2819,6 +2819,10 @@ function getChatFaqActions() {
     { label: "AIが自動で診断する？", kind: "faq", value: "AIが自動で診断するのですか？" },
     { label: "効果は保証されますか？", kind: "faq", value: "効果は保証されますか？" },
     { label: "料金を知りたい", kind: "faq", value: "料金を知りたい" },
+    { label: "支払い方法は？", kind: "faq", value: "支払い方法は？" },
+    { label: "会社名なしでも大丈夫？", kind: "faq", value: "会社名なしでも大丈夫ですか？" },
+    { label: "求人チラシもいける？", kind: "faq", value: "求人チラシも対応できますか？" },
+    { label: "LINE画像も作れる？", kind: "faq", value: "LINE画像も作れますか？" },
     { label: "印刷もお願いできますか？", kind: "faq", value: "印刷もお願いできますか？" },
     { label: "修正はできますか？", kind: "faq", value: "修正はできますか？" },
     { label: "打ち合わせはありますか？", kind: "faq", value: "打ち合わせはありますか？" },
@@ -2871,7 +2875,19 @@ function getConcernGuidanceMessage(route) {
   if (route === "promotion_consulting") {
     return "ありがとうございます。\nチラシだけでなく、SNS・LINE・LP・既存客向け案内なども含めて見たい場合は、販促全体の相談として整理できます。\n\n相談受付に進む場合は、下の「販促全体を相談したい」を押してください。";
   }
-  return "ご質問ありがとうございます。\n無料診断のこと、制作料金のこと、販促全体の相談など、気になる内容に合わせて案内できます。\n\nこのまま受付に進む場合は、下の近いボタンを選んでください。";
+  return "ご質問ありがとうございます。\nこの場で断定できない内容は、条件を確認してからのご案内になります。\n\n分かる範囲の質問はそのまま入力できます。確実に確認したい場合は、直接問い合わせをご利用ください。";
+}
+
+function isQuestionLike(text) {
+  return /[？?]|ですか|ますか|でしょうか|できますか|大丈夫|知りたい|教えて|どう|なぜ|いつ|何日|いくら|値段|金額|料金|高い|安い|無料|診断だけ|営業|PDF|写真|古い|配布前|チラシがまだ|AI|効果|保証|印刷|修正|打ち合わせ|個人情報|支払|会社名なし|店舗名なし|屋号なし|出したくない|電話番号|必要|求人.*(いけ|でき|大丈夫)|LINE.*(作れ|でき)|著作権|権利|返金|キャンセル|解約|契約/.test(text);
+}
+
+function getUnknownQuestionActions() {
+  return [
+    { label: "他の質問を見る", kind: "faq_menu", important: true },
+    { label: "直接問い合わせる", kind: "link", href: "contact.html" },
+    { label: "無料診断に進む", kind: "route", route: "free_diagnosis" }
+  ];
 }
 
 function setActions(actions = []) {
@@ -3142,6 +3158,18 @@ function getSupportResponse(text) {
     return {
       message:
         "反応や売上の保証はできません。\nただし、反応を落としている可能性があるポイントや、改善の優先順位を整理することはできます。"
+    };
+  }
+  if (/反応.*出|成果.*出|売上.*上が|問い合わせ.*増|効果.*ある|集客.*でき/.test(text)) {
+    return {
+      message:
+        "反応や売上を保証することはできません。\nただし、ターゲット・訴求・オファー・導線を整理して、反応につながる可能性を高めるための診断や制作はできます。"
+    };
+  }
+  if (/反応.*出る|成果.*出る|売上.*上がる|問い合わせ.*増える|効果.*ある|集客.*できる/.test(text)) {
+    return {
+      message:
+        "反応や売上を保証することはできません。\nただし、ターゲット・訴求・オファー・導線を整理して、反応につながる可能性を高めるための診断や制作はできます。"
     };
   }
   return null;
@@ -3865,6 +3893,14 @@ function handleText(rawText) {
       return;
     }
     const route = detectChatRoute(text);
+    if (!route && isQuestionLike(text)) {
+      addMessage(
+        "bot",
+        "その内容は、このチャットだけでは正確に断定できません。\n条件や契約内容の確認が必要になるため、直接問い合わせで確認してください。"
+      );
+      setActions(getUnknownQuestionActions());
+      return;
+    }
     addMessage("bot", getConcernGuidanceMessage(route));
     setActions(getPostConcernActions(route));
     return;
@@ -3942,7 +3978,7 @@ function handleText(rawText) {
     "current_response_status",
     "strengths"
   ].includes(currentStage.name);
-  const support = getSupportResponse(text, { allowRoute: supportAllowed });
+  const support = isQuestionLike(text) ? getSupportResponse(text, { allowRoute: supportAllowed }) : null;
   if (support) {
     addMessage("bot", support.message);
     if (support.route) {
@@ -3959,6 +3995,15 @@ function handleText(rawText) {
 
   if (!currentStage) {
     repeatCurrentQuestion();
+    return;
+  }
+
+  if (isQuestionLike(text)) {
+    addMessage(
+      "bot",
+      "その内容は、このチャットだけでは正確に断定できません。\n条件確認が必要なため、直接問い合わせで確認してください。\n\n受付を続ける場合は「受付を続ける」を押してください。"
+    );
+    setActions(getResumeIntakeActions());
     return;
   }
 
@@ -4131,6 +4176,12 @@ function getSupportResponse(text, options = {}) {
         "反応や売上の保証はできません。\nただし、反応を落としている可能性があるポイントや、改善の優先順位を整理することはできます。"
     };
   }
+  if (/反応.*出|成果.*出|売上.*上が|問い合わせ.*増|効果.*ある|集客.*でき/.test(text)) {
+    return {
+      message:
+        "反応や売上を保証することはできません。\nただし、ターゲット・訴求・オファー・導線を整理して、反応につながる可能性を高めるための診断や制作はできます。"
+    };
+  }
   if (/何日|何営業日|どのくらい|どれくらい|いつでき|いつまで|納期|日数|期間/.test(text)) {
     return {
       message:
@@ -4146,6 +4197,22 @@ function getSupportResponse(text, options = {}) {
       message:
         "急ぎの場合は、制作・料金問い合わせとして受付できます。\n希望時期を確認したうえで、対応できる範囲をご案内します。",
       route: allowRoute ? "production_inquiry" : ""
+    };
+  }
+  if (/支払|決済|クレジット|カード|請求|前払い|振込/.test(text)) {
+    return {
+      message:
+        "サブスクプランの月額料金はクレジットカード前払いが基本です。\n銀行振込など個別の支払い方法については、このチャットでは断定できないため、直接お問い合わせください。",
+      actions: allowRoute ? [
+        { label: "直接問い合わせる", kind: "link", href: "contact.html" },
+        { label: "制作・料金について問い合わせたい", kind: "route", route: "production_inquiry" }
+      ] : null
+    };
+  }
+  if (/高い|安い|割引|値引|安く/.test(text)) {
+    return {
+      message:
+        "料金はライト月9,800円、スタンダード月19,800円、プレミアム月29,800円が目安です。\n予算に合うかは、作りたい点数や内容で変わります。個別の値引き可否はこの場では断定できません。"
     };
   }
   if (/印刷|プリント|入稿/.test(text)) {
@@ -4167,6 +4234,48 @@ function getSupportResponse(text, options = {}) {
       actions: allowRoute ? [
         { label: "販促全体を相談したい", kind: "route", route: "promotion_consulting", important: true },
         { label: "制作・料金について相談したい", kind: "route", route: "production_inquiry" }
+      ] : null
+    };
+  }
+  if (/会社名なし|店舗名なし|屋号なし|匿名|名前.*出したくない|店名.*出したくない|個人.*(大丈夫|可能|でも|ですか)|個人事業主.*(大丈夫|可能|でも|ですか)/.test(text)) {
+    return {
+      message:
+        "会社名・店舗名は任意です。\n無料診断や問い合わせでは、お名前とメールアドレスがあれば受付できます。掲載名を出したくない場合は、その旨を入力してください。"
+    };
+  }
+  if (/電話番号|電話.*必要|電話なし|メールだけ/.test(text)) {
+    return {
+      message:
+        "電話番号は任意です。\nメールのみで連絡を希望する場合は、電話番号の項目は「なし」で大丈夫です。"
+    };
+  }
+  if (/求人|採用|スタッフ募集|人材募集|アルバイト|パート/.test(text)) {
+    return {
+      message:
+        "求人チラシにも対応できます。\n条件だけでなく、職場の雰囲気・未経験でも大丈夫か・応募前の不安を減らす言葉なども確認します。",
+      actions: allowRoute ? [
+        { label: "求人チラシを無料診断したい", kind: "route", route: "free_diagnosis", important: true },
+        { label: "求人チラシ制作を相談したい", kind: "route", route: "production_inquiry" }
+      ] : null
+    };
+  }
+  if (/line|LINE|sns|SNS|Instagram|instagram|インスタ|投稿画像|告知画像|バナー|画像だけ/.test(text)) {
+    return {
+      message:
+        "LINE配信用画像、SNS告知画像、キャンペーン画像なども相談できます。\nチラシ以外も含めて見たい場合は、制作・料金問い合わせか販促相談として受付できます。",
+      actions: allowRoute ? [
+        { label: "制作・料金について相談したい", kind: "route", route: "production_inquiry", important: true },
+        { label: "販促全体を相談したい", kind: "route", route: "promotion_consulting" }
+      ] : null
+    };
+  }
+  if (/キャンセル|解約|返金|途中解約|契約期間|最低契約|領収書|請求書|インボイス|著作権|権利|二次利用|商用利用|データ.*納品|aiデータ|AIデータ|psd|PSD|illustrator|イラレ/.test(text)) {
+    return {
+      message:
+        "契約条件、返金、著作権、元データ納品などは内容や契約条件によって変わるため、このチャットでは断定できません。\n正確に確認する場合は、直接お問い合わせください。",
+      actions: allowRoute ? [
+        { label: "直接問い合わせる", kind: "link", href: "contact.html" },
+        { label: "制作・料金について問い合わせたい", kind: "route", route: "production_inquiry" }
       ] : null
     };
   }
