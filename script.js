@@ -2957,6 +2957,25 @@ function detectChatRoute(text) {
   return "";
 }
 
+function getProductionPricingMessage(continueToInquiry = true) {
+  return [
+    "料金の目安はこちらです。",
+    "",
+    "無料チラシ診断：0円",
+    "ライト：月2点まで 9,800円/月",
+    "スタンダード：月5点まで 19,800円/月",
+    "プレミアム：月8点まで 29,800円/月",
+    "販促伴走プラン：月150,000円〜",
+    "",
+    "共通で、チャット依頼・2〜3営業日納品・修正1回まで無料です。",
+    "印刷費は別途です。",
+    "",
+    continueToInquiry
+      ? "内容や点数によって合うプランが変わるので、このまま制作・料金問い合わせとして受付します。"
+      : "内容や点数によって合うプランが変わります。詳しく確認したい場合は、制作・料金問い合わせに進めます。"
+  ].join("\n");
+}
+
 function startChatRoute(route, options = {}) {
   state.intakeType = route;
   state.data.intake_type = CHAT_ROUTE_LABELS[route];
@@ -2969,10 +2988,7 @@ function startChatRoute(route, options = {}) {
       );
     }
     if (route === "production_inquiry") {
-      addMessage(
-        "bot",
-        "もちろん相談できます。\nチラシ制作や料金について知りたい場合は、制作・料金問い合わせとして受付できます。"
-      );
+      addMessage("bot", getProductionPricingMessage());
     }
     if (route === "promotion_consulting") {
       addMessage(
@@ -3000,8 +3016,7 @@ function showRouteChoice() {
 function getSupportResponse(text) {
   if (/料金|いくら|費用|価格|プラン/.test(text)) {
     return {
-      message:
-        "無料診断は費用はかかりません。\n制作を依頼する場合は、内容や点数によってプランが変わります。\n\n料金について詳しく知りたい場合は、制作・料金問い合わせとして受付できます。",
+      message: getProductionPricingMessage(),
       actions: [
         { label: "まず無料診断を受けたい", kind: "route", route: "free_diagnosis", important: true },
         { label: "制作・料金について問い合わせたい", kind: "route", route: "production_inquiry" }
@@ -3872,6 +3887,25 @@ function detectChatRoute(text) {
   return "";
 }
 
+function getChatbotPricingMessage(continueToInquiry = true) {
+  return [
+    "料金の目安はこちらです。",
+    "",
+    "無料チラシ診断：0円",
+    "ライト：月2点まで 9,800円/月",
+    "スタンダード：月5点まで 19,800円/月",
+    "プレミアム：月8点まで 29,800円/月",
+    "販促伴走プラン：月150,000円〜",
+    "",
+    "共通で、チャット依頼・2〜3営業日納品・修正1回まで無料です。",
+    "印刷費は別途です。",
+    "",
+    continueToInquiry
+      ? "内容や点数によって合うプランが変わるので、このまま制作・料金問い合わせとして受付します。"
+      : "内容や点数によって合うプランが変わります。詳しく確認したい場合は、制作・料金問い合わせに進めます。"
+  ].join("\n");
+}
+
 function startChatRoute(route, options = {}) {
   state.intakeType = route;
   state.data.intake_type = CHATBOT_V3_ROUTE_LABELS[route];
@@ -3889,10 +3923,7 @@ function startChatRoute(route, options = {}) {
         "なるほど。\n今のチラシで反応や問い合わせにつながっているか不安ですね。\n\nその場合は、まず無料チラシ診断で、見出し・ターゲット・訴求・オファー・問い合わせ導線などを確認するのがよいです。\n診断だけでも無料で利用できるので、まずは今のチラシ画像またはPDFを送ってください。"
       );
     } else if (route === "production_inquiry") {
-      addMessage(
-        "bot",
-        "もちろん相談できます。\nチラシ制作や料金について知りたい場合は、制作・料金問い合わせとして受付できます。"
-      );
+      addMessage("bot", getChatbotPricingMessage());
     } else {
       addMessage(
         "bot",
@@ -3962,8 +3993,7 @@ function getSupportResponse(text, options = {}) {
   }
   if (/料金|いくら|費用|価格|プラン/.test(text)) {
     return {
-      message:
-        "無料診断は費用はかかりません。\n制作を依頼する場合は、内容や点数によってプランが変わります。\n\n料金について詳しく知りたい場合は、制作・料金問い合わせとして受付できます。",
+      message: getChatbotPricingMessage(allowRoute),
       actions: allowRoute ? [
         { label: "まず無料診断を受けたい", kind: "route", route: "free_diagnosis", important: true },
         { label: "制作・料金について問い合わせたい", kind: "route", route: "production_inquiry" }
