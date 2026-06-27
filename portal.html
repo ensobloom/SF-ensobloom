@@ -12,92 +12,107 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/png" href="assets/logo-mark.png" />
-    <link rel="stylesheet" href="styles.css?v=20260627-portal-signup1" />
+    <link rel="stylesheet" href="styles.css?v=20260627-portal-authdesign2" />
   </head>
   <body class="portal-page">
     <section class="admin-login-screen portal-login-screen" aria-labelledby="portal-login-title">
-      <form class="admin-login-card portal-login-card" id="portalLoginForm">
-        <span class="brand-mark"><img src="assets/logo-mark.png" alt="" /></span>
-        <p>Client Workspace</p>
-        <h1 id="portal-login-title">制作依頼ログイン</h1>
-        <label>
-          <span>メールアドレス</span>
-          <input name="customer_email" type="email" autocomplete="email" required />
-        </label>
-        <label>
-          <span>パスワード</span>
-          <div class="admin-password-field">
-            <input id="portalPasswordInput" name="customer_password" type="password" autocomplete="current-password" required />
-            <button class="admin-password-toggle" id="portalPasswordToggle" type="button" aria-label="パスワードを表示" aria-pressed="false">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M2.8 12s3.4-6.2 9.2-6.2 9.2 6.2 9.2 6.2-3.4 6.2-9.2 6.2S2.8 12 2.8 12Z" />
-                <circle cx="12" cy="12" r="2.8" />
-              </svg>
-            </button>
-          </div>
-        </label>
-        <button type="submit">ログイン</button>
-        <small id="portalLoginStatus" aria-live="polite">契約者専用の制作依頼・納品確認ページです。</small>
-        <div class="portal-auth-switch">
-          <span>初めて利用する方</span>
-          <button type="button" data-portal-auth-mode="signup">新規登録へ</button>
-        </div>
-      </form>
+      <div class="portal-auth-shell">
+        <div class="portal-auth-panel">
+          <form class="admin-login-card portal-login-card" id="portalLoginForm">
+            <span class="brand-mark"><img src="assets/logo-mark.png" alt="" /></span>
+            <p>Client Workspace</p>
+            <h1 id="portal-login-title">制作依頼ログイン</h1>
+            <label>
+              <span>メールアドレス</span>
+              <input name="customer_email" type="email" autocomplete="email" required />
+            </label>
+            <label>
+              <span>パスワード</span>
+              <div class="admin-password-field">
+                <input id="portalPasswordInput" name="customer_password" type="password" autocomplete="current-password" required />
+                <button class="admin-password-toggle" id="portalPasswordToggle" type="button" aria-label="パスワードを表示" aria-pressed="false">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2.8 12s3.4-6.2 9.2-6.2 9.2 6.2 9.2 6.2-3.4 6.2-9.2 6.2S2.8 12 2.8 12Z" />
+                    <circle cx="12" cy="12" r="2.8" />
+                  </svg>
+                </button>
+              </div>
+            </label>
+            <button type="submit">ログイン</button>
+            <small id="portalLoginStatus" aria-live="polite">契約者専用の制作依頼・納品確認ページです。</small>
+            <div class="portal-auth-switch">
+              <span>初めて利用する方</span>
+              <button type="button" data-portal-auth-mode="signup">新規登録へ</button>
+            </div>
+          </form>
 
-      <form class="admin-login-card portal-login-card" id="portalSignupForm" hidden>
-        <span class="brand-mark"><img src="assets/logo-mark.png" alt="" /></span>
-        <p>Client Registration</p>
-        <h1>制作依頼アカウント登録</h1>
-        <label>
-          <span>会社名・店舗名</span>
-          <input name="signup_company" type="text" autocomplete="organization" required />
-        </label>
-        <label>
-          <span>お名前</span>
-          <input name="signup_name" type="text" autocomplete="name" required />
-        </label>
-        <label>
-          <span>メールアドレス</span>
-          <input name="signup_email" type="email" autocomplete="email" required />
-        </label>
-        <label>
-          <span>希望プラン</span>
-          <select name="signup_plan" required>
-            <option value="">選択してください</option>
-            <option value="ライト">ライト / 月2点</option>
-            <option value="スタンダード">スタンダード / 月5点</option>
-            <option value="プレミアム">プレミアム / 月8点</option>
-            <option value="販促伴走プラン">販促伴走プラン</option>
-            <option value="相談して決めたい">相談して決めたい</option>
-          </select>
-        </label>
-        <label>
-          <span>パスワード</span>
-          <div class="admin-password-field">
-            <input id="portalSignupPasswordInput" name="signup_password" type="password" autocomplete="new-password" required />
-            <button class="admin-password-toggle" id="portalSignupPasswordToggle" type="button" aria-label="パスワードを表示" aria-pressed="false">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M2.8 12s3.4-6.2 9.2-6.2 9.2 6.2 9.2 6.2-3.4 6.2-9.2 6.2S2.8 12 2.8 12Z" />
-                <circle cx="12" cy="12" r="2.8" />
-              </svg>
-            </button>
-          </div>
-        </label>
-        <label>
-          <span>パスワード確認</span>
-          <input name="signup_password_confirm" type="password" autocomplete="new-password" required />
-        </label>
-        <label class="portal-auth-check">
-          <input name="signup_consent" type="checkbox" value="yes" required />
-          <span>登録内容を確認し、連絡・契約確認に利用することに同意します。</span>
-        </label>
-        <button type="submit">登録申請する</button>
-        <small id="portalSignupStatus" aria-live="polite">登録後、契約確認を行ってからログイン情報を有効化します。</small>
-        <div class="portal-auth-switch">
-          <span>すでに登録済みの方</span>
-          <button type="button" data-portal-auth-mode="login">ログインへ戻る</button>
+          <form class="admin-login-card portal-login-card" id="portalSignupForm" hidden>
+            <span class="brand-mark"><img src="assets/logo-mark.png" alt="" /></span>
+            <p>Client Registration</p>
+            <h1>制作依頼アカウント登録</h1>
+            <label>
+              <span>会社名・店舗名</span>
+              <input name="signup_company" type="text" autocomplete="organization" required />
+            </label>
+            <label>
+              <span>お名前</span>
+              <input name="signup_name" type="text" autocomplete="name" required />
+            </label>
+            <label>
+              <span>メールアドレス</span>
+              <input name="signup_email" type="email" autocomplete="email" required />
+            </label>
+            <label>
+              <span>希望プラン</span>
+              <select name="signup_plan" required>
+                <option value="">選択してください</option>
+                <option value="ライト">ライト / 月2点</option>
+                <option value="スタンダード">スタンダード / 月5点</option>
+                <option value="プレミアム">プレミアム / 月8点</option>
+                <option value="販促伴走プラン">販促伴走プラン</option>
+                <option value="相談して決めたい">相談して決めたい</option>
+              </select>
+            </label>
+            <label>
+              <span>パスワード</span>
+              <div class="admin-password-field">
+                <input id="portalSignupPasswordInput" name="signup_password" type="password" autocomplete="new-password" required />
+                <button class="admin-password-toggle" id="portalSignupPasswordToggle" type="button" aria-label="パスワードを表示" aria-pressed="false">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2.8 12s3.4-6.2 9.2-6.2 9.2 6.2 9.2 6.2-3.4 6.2-9.2 6.2S2.8 12 2.8 12Z" />
+                    <circle cx="12" cy="12" r="2.8" />
+                  </svg>
+                </button>
+              </div>
+            </label>
+            <label>
+              <span>パスワード確認</span>
+              <input name="signup_password_confirm" type="password" autocomplete="new-password" required />
+            </label>
+            <label class="portal-auth-check">
+              <input name="signup_consent" type="checkbox" value="yes" required />
+              <span>登録内容を確認し、連絡・契約確認に利用することに同意します。</span>
+            </label>
+            <button type="submit">登録申請する</button>
+            <small id="portalSignupStatus" aria-live="polite">登録後、契約確認を行ってからログイン情報を有効化します。</small>
+            <div class="portal-auth-switch">
+              <span>すでに登録済みの方</span>
+              <button type="button" data-portal-auth-mode="login">ログインへ戻る</button>
+            </div>
+          </form>
         </div>
-      </form>
+
+        <aside class="portal-auth-side" aria-label="制作依頼ポータルでできること">
+          <span>Contractor Portal</span>
+          <h2>依頼、確認、修正までをひとつの画面で。</h2>
+          <p>サブスク契約後の制作依頼、素材共有、納品確認、修正依頼をまとめて管理できます。</p>
+          <ul>
+            <li>月の制作枠と進行状況を確認</li>
+            <li>チラシ・POP・SNS画像を依頼</li>
+            <li>初稿・最終データを確認</li>
+          </ul>
+        </aside>
+      </div>
     </section>
 
     <header class="site-header" aria-label="サイトヘッダー">
@@ -284,7 +299,7 @@
       </div>
     </footer>
 
-    <script src="app-config.js?v=20260627-portal-signup1"></script>
-    <script src="script.js?v=20260627-portal-signup1"></script>
+    <script src="app-config.js?v=20260627-portal-authdesign2"></script>
+    <script src="script.js?v=20260627-portal-authdesign2"></script>
   </body>
 </html>
