@@ -357,10 +357,6 @@ const portalLoginForm = document.getElementById("portalLoginForm");
 const portalLoginStatus = document.getElementById("portalLoginStatus");
 const portalPasswordInput = document.getElementById("portalPasswordInput");
 const portalPasswordToggle = document.getElementById("portalPasswordToggle");
-const portalSignupForm = document.getElementById("portalSignupForm");
-const portalSignupStatus = document.getElementById("portalSignupStatus");
-const portalSignupPasswordInput = document.getElementById("portalSignupPasswordInput");
-const portalSignupPasswordToggle = document.getElementById("portalSignupPasswordToggle");
 const adminApp = document.querySelector(".admin-app");
 const adminLoginForm = document.getElementById("adminLoginForm");
 const adminLoginStatus = document.getElementById("adminLoginStatus");
@@ -418,16 +414,6 @@ if (portalLoginForm) {
   portalLoginForm.addEventListener("submit", handlePortalLogin);
 }
 
-if (portalSignupForm) {
-  portalSignupForm.addEventListener("submit", handlePortalSignup);
-}
-
-document.querySelectorAll("[data-portal-auth-mode]").forEach((button) => {
-  button.addEventListener("click", () => {
-    setPortalAuthMode(button.dataset.portalAuthMode || "login");
-  });
-});
-
 if (adminApp) {
   initAdminAuth();
   initAdmin();
@@ -461,16 +447,6 @@ if (portalPasswordInput && portalPasswordToggle) {
     portalPasswordToggle.classList.toggle("is-visible", !isVisible);
     portalPasswordToggle.setAttribute("aria-pressed", String(!isVisible));
     portalPasswordToggle.setAttribute("aria-label", isVisible ? "パスワードを表示" : "パスワードを非表示");
-  });
-}
-
-if (portalSignupPasswordInput && portalSignupPasswordToggle) {
-  portalSignupPasswordToggle.addEventListener("click", () => {
-    const isVisible = portalSignupPasswordInput.type === "text";
-    portalSignupPasswordInput.type = isVisible ? "password" : "text";
-    portalSignupPasswordToggle.classList.toggle("is-visible", !isVisible);
-    portalSignupPasswordToggle.setAttribute("aria-pressed", String(!isVisible));
-    portalSignupPasswordToggle.setAttribute("aria-label", isVisible ? "パスワードを表示" : "パスワードを非表示");
   });
 }
 
@@ -1256,18 +1232,6 @@ function showPortalApp() {
   }
 }
 
-function setPortalAuthMode(mode) {
-  const showSignup = mode === "signup";
-  if (portalLoginForm) {
-    portalLoginForm.hidden = showSignup;
-  }
-  if (portalSignupForm) {
-    portalSignupForm.hidden = !showSignup;
-  }
-  setPortalLoginStatus("契約者専用の制作依頼・納品確認ページです。", true);
-  setPortalSignupStatus("登録後、契約確認を行ってからログイン情報を有効化します。", true);
-}
-
 async function handlePortalLogin(event) {
   event.preventDefault();
   const form = event.currentTarget;
@@ -1312,79 +1276,11 @@ async function handlePortalLogin(event) {
   }
 }
 
-async function handlePortalSignup(event) {
-  event.preventDefault();
-  const form = event.currentTarget;
-  const formData = new FormData(form);
-  const payload = {
-    companyName: String(formData.get("signup_company") || "").trim(),
-    contactName: String(formData.get("signup_name") || "").trim(),
-    email: String(formData.get("signup_email") || "").trim().toLowerCase(),
-    desiredPlan: String(formData.get("signup_plan") || "").trim(),
-    password: String(formData.get("signup_password") || ""),
-    passwordConfirm: String(formData.get("signup_password_confirm") || ""),
-    consent: formData.get("signup_consent") === "yes",
-    createdAt: new Date().toISOString()
-  };
-
-  if (!payload.companyName || !payload.contactName || !isValidEmail(payload.email) || !payload.desiredPlan) {
-    setPortalSignupStatus("会社名・お名前・メールアドレス・希望プランを入力してください。", false);
-    return;
-  }
-
-  if (payload.password.length < 8) {
-    setPortalSignupStatus("パスワードは8文字以上で入力してください。", false);
-    return;
-  }
-
-  if (payload.password !== payload.passwordConfirm) {
-    setPortalSignupStatus("パスワード確認が一致していません。", false);
-    return;
-  }
-
-  if (!payload.consent) {
-    setPortalSignupStatus("登録内容の利用について同意が必要です。", false);
-    return;
-  }
-
-  const signupEndpoint = getEndpoint("customerSignup");
-  if (!signupEndpoint) {
-    setPortalSignupStatus("新規登録は本番登録APIの設定後に利用できます。", false);
-    return;
-  }
-
-  try {
-    const result = await postJsonEndpoint("customerSignup", {
-      source: "portal_signup",
-      ...payload
-    });
-    form.reset();
-    setPortalSignupStatus("登録申請を受け付けました。契約確認後、ログイン情報をメールで案内します。", true);
-    if (result?.autoLogin === true) {
-      sessionStorage.setItem(PORTAL_AUTH_STORAGE_KEY, "true");
-      if (result.token) {
-        sessionStorage.setItem("customer_portal_token", result.token);
-      }
-      showPortalApp();
-    }
-  } catch (error) {
-    console.error(error);
-    setPortalSignupStatus("登録申請の送信に失敗しました。時間をおいてもう一度お試しください。", false);
-  }
-}
-
 function setPortalLoginStatus(message, success) {
   if (!portalLoginStatus) return;
   portalLoginStatus.textContent = message;
   portalLoginStatus.classList.toggle("error", !success);
   portalLoginStatus.classList.toggle("success", Boolean(success));
-}
-
-function setPortalSignupStatus(message, success) {
-  if (!portalSignupStatus) return;
-  portalSignupStatus.textContent = message;
-  portalSignupStatus.classList.toggle("error", !success);
-  portalSignupStatus.classList.toggle("success", Boolean(success));
 }
 
 function initPortal() {
