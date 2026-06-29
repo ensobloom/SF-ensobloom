@@ -9265,6 +9265,23 @@ a {
   box-shadow: none;
 }
 
+.admin-dashboard-inbox-list {
+  max-height: 560px;
+}
+
+.admin-dashboard-inbox-card header span {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #fff0f2;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
 .admin-chat-section {
   display: grid;
   gap: 18px;

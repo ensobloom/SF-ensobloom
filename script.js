@@ -1871,6 +1871,7 @@ function renderAdmin() {
   }
   renderAdminMetrics(projects);
   renderAdminEntries();
+  renderAdminDashboardInbox();
   renderAdminChatAnalytics();
   renderAdminBoard(projects);
   renderAdminSales();
@@ -1922,6 +1923,75 @@ function renderAdminEntries() {
     "promotion_challenge",
     "message"
   ]);
+}
+
+function renderAdminDashboardInbox() {
+  const target = document.getElementById("adminDashboardInbox");
+  if (!target) return;
+
+  const entries = [
+    ...getAdminDiagnosisEntries().map((entry) => ({
+      ...entry,
+      adminInboxType: "無料診断申し込み",
+      adminInboxFields: [
+        "flyer_file_url",
+        "flyer_file_download_url",
+        "flyer_file",
+        "customer_name",
+        "email",
+        "phone",
+        "issue_text",
+        "flyer_purpose"
+      ]
+    })),
+    ...getAdminContactEntries().map((entry) => ({
+      ...entry,
+      adminInboxType: ADMIN_ROUTE_LABELS[getAdminRouteKey(entry.intake_type || entry.type || entry.route || "direct_contact")] || "問い合わせ受付",
+      adminInboxFields: [
+        "customer_name",
+        "name",
+        "email",
+        "phone",
+        "company_name",
+        "inquiry_detail",
+        "production_item",
+        "promotion_challenge",
+        "message"
+      ]
+    }))
+  ].sort((a, b) => adminDateValue(b.created_at) - adminDateValue(a.created_at));
+
+  if (!entries.length) {
+    target.innerHTML = '<div class="empty-state">まだ問い合わせ・申し込み内容はありません。</div>';
+    return;
+  }
+
+  target.innerHTML = entries
+    .slice(0, 10)
+    .map((entry) => {
+      const title = entry.customer_name || entry.name || entry.company_name || entry.email || "未入力";
+      const rows = prioritizeAdminEntryFields(entry.adminInboxFields, entry)
+        .filter((key) => entry[key])
+        .slice(0, 7)
+        .map((key) => `
+          <div>
+            <dt>${escapeHtml(ADMIN_ENTRY_LABELS[key] || key)}</dt>
+            <dd>${formatAdminEntryHtml(key, entry[key])}</dd>
+          </div>
+        `)
+        .join("");
+      return `
+        <article class="admin-entry-card admin-dashboard-inbox-card">
+          <header>
+            <span>${escapeHtml(entry.adminInboxType)}</span>
+            <time>${escapeHtml(formatDateTime(entry.created_at))}</time>
+          </header>
+          <strong>${escapeHtml(title)}</strong>
+          <dl>${rows || '<div><dt>内容</dt><dd>詳細未入力</dd></div>'}</dl>
+        </article>
+      `;
+    })
+    .join("");
 }
 
 function getAdminDiagnosisEntries() {
