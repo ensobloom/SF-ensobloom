@@ -3309,6 +3309,10 @@ function isQuestionLike(text) {
   return /[？?]|ですか|ますか|でしょうか|できますか|大丈夫|知りたい|教えて|どう|なぜ|いつ|何日|いくら|値段|金額|料金|高い|安い|無料|診断だけ|営業|PDF|写真|古い|配布前|チラシがまだ|まだ作ってない|まだ作っていない|未作成|AI|効果|保証|印刷|修正|打ち合わせ|個人情報|支払|会社名なし|店舗名なし|屋号なし|出したくない|電話番号|必要|求人.*(いけ|でき|大丈夫)|LINE.*(作れ|でき)|著作権|権利|返金|キャンセル|解約|契約/.test(text);
 }
 
+function isExplicitQuestionLike(text) {
+  return /[？?]|ですか|ますか|でしょうか|できますか|知りたい|教えて|どう|なぜ|いつ|何日|いくら|値段|金額|料金/.test(text);
+}
+
 function getUnknownQuestionActions() {
   return [
     { label: "他の質問を見る", kind: "faq_menu", important: true },
@@ -3384,6 +3388,8 @@ function handleText(rawText) {
   }
 
   const stageForSupportV2 = getCurrentStage();
+  const isChoiceAnswerV2 = isStageChoiceAnswer(stageForSupportV2, text);
+  const treatAsQuestionV2 = isQuestionLike(text) && !(stageForSupportV2?.choices?.length && !isExplicitQuestionLike(text));
   const preferFieldAnswerV2 = stageForSupportV2 && [
     "inquiry_detail",
     "production_item",
@@ -3395,7 +3401,7 @@ function handleText(rawText) {
     "consulting_scope",
     "goal"
   ].includes(stageForSupportV2.name);
-  const support = preferFieldAnswerV2 ? null : getSupportResponse(text);
+  const support = preferFieldAnswerV2 || isChoiceAnswerV2 || !treatAsQuestionV2 ? null : getSupportResponse(text);
   if (support) {
     addMessage("bot", support.message);
     if (support.route) {
@@ -3615,6 +3621,12 @@ function getCurrentFields() {
 
 function getCurrentStage() {
   return getCurrentFields().find((field) => field.name === state.stage);
+}
+
+function isStageChoiceAnswer(stage, text) {
+  if (!stage?.choices?.length) return false;
+  const normalized = String(text || "").trim();
+  return stage.choices.some((choice) => String(choice).trim() === normalized);
 }
 
 function addProgress(stageName) {
@@ -4566,6 +4578,8 @@ function handleText(rawText) {
   }
 
   const currentStage = getCurrentStage();
+  const isChoiceAnswer = isStageChoiceAnswer(currentStage, text);
+  const treatAsQuestion = isQuestionLike(text) && !(currentStage?.choices?.length && !isExplicitQuestionLike(text));
   const supportAllowed = !currentStage || ![
     "inquiry_detail",
     "production_item",
@@ -4580,7 +4594,7 @@ function handleText(rawText) {
     "current_response_status",
     "strengths"
   ].includes(currentStage.name);
-  const support = isQuestionLike(text) ? getSupportResponse(text, { allowRoute: supportAllowed }) : null;
+  const support = !isChoiceAnswer && treatAsQuestion ? getSupportResponse(text, { allowRoute: supportAllowed }) : null;
   if (support) {
     addMessage("bot", support.message);
     if (support.route) {
@@ -4600,7 +4614,7 @@ function handleText(rawText) {
     return;
   }
 
-  if (isQuestionLike(text)) {
+  if (!isChoiceAnswer && treatAsQuestion) {
     addMessage(
       "bot",
       "その内容は、このチャットだけでは正確に断定できません。\n条件確認が必要なため、直接問い合わせで確認してください。\n\n受付を続ける場合は「受付を続ける」を押してください。"
