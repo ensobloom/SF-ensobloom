@@ -1967,7 +1967,7 @@ function renderAdminEntryList(elementId, entries, fields) {
     .slice(0, 12)
     .map((entry) => {
       const title = entry.customer_name || entry.name || entry.company_name || entry.email || "未入力";
-      const rows = fields
+      const rows = prioritizeAdminEntryFields(fields, entry)
         .filter((key) => entry[key])
         .slice(0, 8)
         .map(
@@ -1989,7 +1989,14 @@ function renderAdminEntryList(elementId, entries, fields) {
         </article>
       `;
     })
-    .join("");
+	    .join("");
+	}
+
+function prioritizeAdminEntryFields(fields, entry) {
+  const priority = ["flyer_file_url", "flyer_file"];
+  const priorityFields = priority.filter((key) => fields.includes(key) && entry[key]);
+  const rest = fields.filter((key) => !priority.includes(key));
+  return [...priorityFields, ...rest];
 }
 
 function formatAdminEntryHtml(key, value) {
