@@ -25,6 +25,21 @@ Deno.serve(async (request) => {
     let flyerFileType = String(payload.flyerFileType || "");
     let flyerFileSize = Number(payload.flyerFileSize || 0);
 
+    if (intakeType === "free_diagnosis") {
+      const validation = validateDiagnosisPayload(payload, flyerFile);
+      if (!validation.valid) {
+        return jsonResponse(
+          {
+            ok: false,
+            error: "required_fields_missing",
+            message: validation.message,
+            missing: validation.missing
+          },
+          400
+        );
+      }
+    }
+
     if (flyerFile instanceof File && flyerFile.size > 0) {
       flyerFileName = flyerFile.name;
       flyerFileType = flyerFile.type;
@@ -119,6 +134,58 @@ Deno.serve(async (request) => {
     return jsonResponse({ ok: false, error: String(error?.message || error) }, 500);
   }
 });
+
+function validateDiagnosisPayload(payload: Record<string, unknown>, flyerFile: FormDataEntryValue | null) {
+  const requiredFields = [
+    ["contactName", "お名前"],
+    ["email", "メールアドレス"],
+    ["phone", "電話番号"],
+    ["industry", "業種"],
+    ["flyerPurpose", "チラシの目的"],
+    ["desiredResponse", "増やしたい反応"],
+    ["reviewFocus", "特に見てほしいポイント"]
+  ];
+  const missing = requiredFields
+    .filter(([key]) => !hasText(payload[key]))
+    .map(([, label]) => label);
+
+  if (!hasDiagnosisFile(flyerFile)) missing.unshift("チラシ画像/PDF");
+  if (hasText(payload.email) && !isValidEmail(payload.email)) missing.push("有効なメールアドレス");
+  if (hasText(payload.phone) && !isValidPhone(payload.phone)) missing.push("有効な電話番号");
+
+  const uniqueMissing = [...new Set(missing)];
+  if (uniqueMissing.length) {
+    return {
+      valid: false,
+      missing: uniqueMissing,
+      message: `無料診断の受付に必要な項目が不足しています：${uniqueMissing.join("、")}`
+    };
+  }
+
+  return { valid: true, missing: [], message: "" };
+}
+
+function hasText(value: unknown) {
+  return String(value || "").trim().length > 0;
+}
+
+function hasDiagnosisFile(value: FormDataEntryValue | null) {
+  return value instanceof File && value.size > 0;
+}
+
+function isValidEmail(value: unknown) {
+  const text = String(value || "").trim();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text);
+}
+
+function isValidPhone(value: unknown) {
+  const text = String(value || "").trim();
+  if (!text || /^(なし|無し|ない|無い|メールのみ|不要)$/i.test(text)) return false;
+  const normalized = text.replace(/[０-９]/g, (char) =>
+    String.fromCharCode(char.charCodeAt(0) - 0xfee0)
+  );
+  return normalized.replace(/\D/g, "").length >= 10;
+}
 
 function buildDiagnosisNotice(row: Record<string, unknown>) {
   return [
