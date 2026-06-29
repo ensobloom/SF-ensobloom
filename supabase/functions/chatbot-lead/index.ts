@@ -44,7 +44,7 @@ Deno.serve(async (request) => {
       flyerFileName = flyerFile.name;
       flyerFileType = flyerFile.type;
       flyerFileSize = flyerFile.size;
-      const safeName = flyerFile.name.replace(/[^\w.\-ぁ-んァ-ヶ一-龠々ー]/g, "_");
+      const safeName = createSafeStorageFileName(flyerFile.name);
       flyerFilePath = `diagnosis/${id}/${safeName}`;
       const { error: uploadError } = await supabase.storage
         .from(bucketName)
@@ -218,6 +218,25 @@ function hasText(value: unknown) {
 
 function hasDiagnosisFile(value: FormDataEntryValue | null) {
   return value instanceof File && value.size > 0;
+}
+
+function createSafeStorageFileName(name: string) {
+  const fallback = "flyer-file";
+  const dotIndex = name.lastIndexOf(".");
+  const rawBase = dotIndex > 0 ? name.slice(0, dotIndex) : name;
+  const rawExt = dotIndex > 0 ? name.slice(dotIndex + 1) : "";
+  const base = rawBase
+    .normalize("NFKD")
+    .replace(/[^\w-]+/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 80) || fallback;
+  const ext = rawExt
+    .normalize("NFKD")
+    .replace(/[^\w]+/g, "")
+    .slice(0, 12)
+    .toLowerCase();
+  return ext ? `${base}.${ext}` : base;
 }
 
 function isValidEmail(value: unknown) {
