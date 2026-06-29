@@ -2932,7 +2932,8 @@ const CHAT_ROUTE_FIELDS = {
     {
       name: "customer_name",
       label: "お名前",
-      question: "担当者のお名前を教えてください。"
+      question:
+        "ここから最後に、診断レポートをお送りするための連絡先を確認します。\nまず、担当者のお名前を教えてください。"
     },
     {
       name: "email",
@@ -2987,12 +2988,13 @@ const CHAT_ROUTE_FIELDS = {
     {
       name: "customer_name",
       label: "お名前",
-      question: "担当者のお名前を教えてください。"
+      question:
+        "ここから最後に、制作内容や料金をご案内するための連絡先を確認します。\nまず、担当者のお名前を教えてください。"
     },
     {
       name: "email",
       label: "メールアドレス",
-      question: "連絡用のメールアドレスを教えてください。"
+      question: "制作内容や料金の案内を送るメールアドレスを教えてください。"
     },
     {
       name: "phone",
@@ -3047,12 +3049,13 @@ const CHAT_ROUTE_FIELDS = {
     {
       name: "customer_name",
       label: "お名前",
-      question: "担当者のお名前を教えてください。"
+      question:
+        "ここから最後に、相談内容をご案内するための連絡先を確認します。\nまず、担当者のお名前を教えてください。"
     },
     {
       name: "email",
       label: "メールアドレス",
-      question: "連絡用のメールアドレスを教えてください。"
+      question: "相談内容への返信を送るメールアドレスを教えてください。"
     },
     {
       name: "phone",
@@ -4054,7 +4057,8 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "customer_name",
       label: "お名前",
-      question: "担当者のお名前を教えてください。"
+      question:
+        "ここから最後に、診断レポートをお送りするための連絡先を確認します。\nまず、担当者のお名前を教えてください。"
     },
     {
       name: "email",
@@ -4151,12 +4155,13 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "customer_name",
       label: "お名前",
-      question: "担当者のお名前を教えてください。"
+      question:
+        "ここから最後に、制作内容や料金をご案内するための連絡先を確認します。\nまず、担当者のお名前を教えてください。"
     },
     {
       name: "email",
       label: "メールアドレス",
-      question: "連絡用のメールアドレスを教えてください。"
+      question: "制作内容や料金の案内を送るメールアドレスを教えてください。"
     },
     {
       name: "phone",
@@ -4215,12 +4220,13 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "customer_name",
       label: "お名前",
-      question: "担当者のお名前を教えてください。"
+      question:
+        "ここから最後に、相談内容をご案内するための連絡先を確認します。\nまず、担当者のお名前を教えてください。"
     },
     {
       name: "email",
       label: "メールアドレス",
-      question: "連絡用のメールアドレスを教えてください。"
+      question: "相談内容への返信を送るメールアドレスを教えてください。"
     },
     {
       name: "phone",
