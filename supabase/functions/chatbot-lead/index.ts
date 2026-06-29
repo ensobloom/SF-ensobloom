@@ -152,6 +152,7 @@ function validateDiagnosisPayload(payload: Record<string, unknown>, flyerFile: F
   if (!hasDiagnosisFile(flyerFile)) missing.unshift("チラシ画像/PDF");
   if (hasText(payload.email) && !isValidEmail(payload.email)) missing.push("有効なメールアドレス");
   if (hasText(payload.phone) && !isValidPhone(payload.phone)) missing.push("有効な電話番号");
+  if (!hasConsent(payload.consent)) missing.push("同意確認");
 
   const uniqueMissing = [...new Set(missing)];
   if (uniqueMissing.length) {
@@ -185,6 +186,10 @@ function isValidPhone(value: unknown) {
     String.fromCharCode(char.charCodeAt(0) - 0xfee0)
   );
   return normalized.replace(/\D/g, "").length >= 10;
+}
+
+function hasConsent(value: unknown) {
+  return value === true || String(value).toLowerCase() === "true" || String(value) === "同意済み";
 }
 
 function buildDiagnosisNotice(row: Record<string, unknown>) {
