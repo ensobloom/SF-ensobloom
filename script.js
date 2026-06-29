@@ -262,7 +262,8 @@ const ADMIN_ARCHIVE_FIELDS = {
     "current_response_status",
     "company_name",
     "customer_name",
-    "email"
+    "email",
+    "phone"
   ],
   production_inquiry: [
     "initial_concern",
@@ -955,6 +956,11 @@ function captureExtraInfo(text, currentField) {
     state.data.email = email[0];
   }
 
+  const phone = extractPhone(text);
+  if (phone && currentField !== "phone" && !state.data.phone) {
+    state.data.phone = phone;
+  }
+
   if (currentField !== "industry" && !state.data.industry) {
     const industry = findFieldKeyword("industry", text);
     if (industry) state.data.industry = industry;
@@ -988,6 +994,7 @@ function captureExtraInfo(text, currentField) {
 
 function extractAnswer(field, text) {
   if (field === "email") return text.toLowerCase();
+  if (field === "phone") return extractPhone(text) || text;
   if (field === "distribution_area") {
     const area = extractArea(text);
     return area || text;
@@ -1020,6 +1027,20 @@ function extractArea(text) {
 
 function isValidEmail(text) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text);
+}
+
+function extractPhone(text) {
+  const normalized = String(text || "").replace(/[０-９]/g, (char) =>
+    String.fromCharCode(char.charCodeAt(0) - 0xfee0)
+  );
+  const match = normalized.match(/(?:0\d{1,4}[-ー−\s]?\d{1,4}[-ー−\s]?\d{3,4}|0[789]0[-ー−\s]?\d{4}[-ー−\s]?\d{4})/);
+  return match ? match[0].replace(/[ー−\s]/g, "-") : "";
+}
+
+function isValidPhone(text) {
+  const value = String(text || "").trim();
+  if (!value || /^(なし|無し|ない|無い|メールのみ|不要)$/i.test(value)) return false;
+  return extractPhone(value).replace(/\D/g, "").length >= 10;
 }
 
 function displayValue(key) {
@@ -2903,6 +2924,12 @@ const CHAT_ROUTE_FIELDS = {
       label: "メールアドレス",
       question:
         "診断レポートを送るメールアドレスを教えてください。\n入力間違いがあるとレポートを届けられないため、確認できるアドレスを入力してください。"
+    },
+    {
+      name: "phone",
+      label: "電話番号",
+      question:
+        "最後に、連絡先として電話番号を教えてください。\n診断内容の確認が必要な場合にだけ使用します。"
     }
   ],
   production_inquiry: [
@@ -3036,7 +3063,8 @@ const CHAT_SUMMARY_FIELDS = {
     "current_response_status",
     "company_name",
     "customer_name",
-    "email"
+    "email",
+    "phone"
   ],
   production_inquiry: [
     "intake_type",
@@ -3389,6 +3417,13 @@ function handleText(rawText) {
     addMessage(
       "bot",
       "メールアドレスの形式が少し違うようです。\n診断レポートや案内を届けるため、もう一度確認して入力してください。"
+    );
+    return;
+  }
+  if (state.intakeType === "free_diagnosis" && stage.name === "phone" && !isValidPhone(text)) {
+    addMessage(
+      "bot",
+      "無料診断では電話番号も必要です。\n診断内容の確認が必要な場合にだけ使用しますので、連絡可能な番号を入力してください。"
     );
     return;
   }
@@ -4018,7 +4053,7 @@ const CHATBOT_V3_FIELDS = {
       name: "phone",
       label: "電話番号",
       question:
-        "念のため、電話番号も教えてください。\n診断内容の確認が必要な場合にだけ使用します。"
+        "最後に、連絡先として電話番号を教えてください。\n診断内容の確認が必要な場合にだけ使用します。"
     }
   ],
   production_inquiry: [
@@ -4546,6 +4581,13 @@ function handleText(rawText) {
     );
     return;
   }
+  if (state.intakeType === "free_diagnosis" && currentStage.name === "phone" && !isValidPhone(text)) {
+    addMessage(
+      "bot",
+      "無料診断では電話番号も必要です。\n診断内容の確認が必要な場合にだけ使用しますので、連絡可能な番号を入力してください。"
+    );
+    return;
+  }
 
   state.data[currentStage.name] = extractAnswer(currentStage.name, text);
   captureExtraInfo(text);
@@ -4772,13 +4814,19 @@ function getSupportResponse(text, options = {}) {
   if (/会社名なし|店舗名なし|屋号なし|匿名|名前.*出したくない|店名.*出したくない|個人.*(大丈夫|可能|でも|ですか)|個人事業主.*(大丈夫|可能|でも|ですか)/.test(text)) {
     return {
       message:
-        "会社名・店舗名は任意です。\n無料診断や問い合わせでは、お名前とメールアドレスがあれば受付できます。掲載名を出したくない場合は、その旨を入力してください。"
+        "会社名・店舗名は任意です。\n無料診断では、診断レポートを確実にお届けするために、お名前・メールアドレス・電話番号を確認しています。掲載名を出したくない場合は、その旨を入力してください。"
     };
   }
   if (/電話番号|電話.*必要|電話なし|メールだけ/.test(text)) {
+    if (state.intakeType === "free_diagnosis" || !state.intakeType) {
+      return {
+        message:
+          "無料診断では、診断内容の確認やメール不達時の連絡のため、電話番号も確認しています。\n営業電話を前提にしたものではありません。診断内容の確認が必要な場合にだけ使用します。\n\n制作・料金問い合わせや販促相談の場合は、電話番号は任意です。"
+      };
+    }
     return {
       message:
-        "電話番号は任意です。\nメールのみで連絡を希望する場合は、電話番号の項目は「なし」で大丈夫です。"
+        "制作・料金問い合わせや販促相談では、電話番号は任意です。\nメールのみで連絡を希望する場合は、電話番号の項目は「なし」で大丈夫です。"
     };
   }
   if (/求人|採用|スタッフ募集|人材募集|アルバイト|パート/.test(text)) {
@@ -5064,6 +5112,13 @@ function validateChatLead(data) {
       valid: false,
       field: "email",
       message: "メールアドレスの形式が少し違うようです。\n診断レポートや案内を届けるため、もう一度確認して入力してください。"
+    };
+  }
+  if (state.intakeType === "free_diagnosis" && !isValidPhone(data.phone)) {
+    return {
+      valid: false,
+      field: "phone",
+      message: "無料診断では電話番号も必要です。\n診断内容の確認が必要な場合にだけ使用しますので、連絡可能な番号を入力してください。"
     };
   }
   if (state.intakeType === "free_diagnosis" && !data.flyer_file) {
