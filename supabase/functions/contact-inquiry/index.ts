@@ -32,16 +32,27 @@ Deno.serve(async (request) => {
       .select("id")
       .single();
     if (error) throw error;
-    await sendAdminNotification({
-      subject: "【無料診断LP】直接問い合わせが入りました",
-      text: body.notice || buildNotice(row)
-    });
+    await notifySafely(() =>
+      sendAdminNotification({
+        subject: "【無料診断LP】直接問い合わせが入りました",
+        text: body.notice || buildNotice(row)
+      })
+    );
     return jsonResponse({ ok: true, id: data.id });
   } catch (error) {
     console.error(error);
     return jsonResponse({ ok: false, error: String(error?.message || error) }, 500);
   }
 });
+
+async function notifySafely(send: () => Promise<unknown>) {
+  try {
+    return await send();
+  } catch (error) {
+    console.error("notification failed", error);
+    return { skipped: true, error: String(error?.message || error) };
+  }
+}
 
 function buildNotice(row: Record<string, unknown>) {
   return [

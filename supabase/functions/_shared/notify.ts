@@ -1,13 +1,22 @@
 type MailPayload = {
+  to?: string;
   subject: string;
   text: string;
 };
 
 export async function sendAdminNotification(payload: MailPayload) {
-  const apiKey = Deno.env.get("RESEND_API_KEY");
   const to = Deno.env.get("ADMIN_NOTIFY_EMAIL");
+  return sendMail({ ...payload, to });
+}
+
+export async function sendCustomerNotification(payload: Required<MailPayload>) {
+  return sendMail(payload);
+}
+
+async function sendMail(payload: MailPayload) {
+  const apiKey = Deno.env.get("RESEND_API_KEY");
   const from = Deno.env.get("FROM_EMAIL") || "Enso Bloom <noreply@example.com>";
-  if (!apiKey || !to) {
+  if (!apiKey || !payload.to) {
     console.info("notification skipped", payload.subject);
     return { skipped: true };
   }
@@ -20,7 +29,7 @@ export async function sendAdminNotification(payload: MailPayload) {
     },
     body: JSON.stringify({
       from,
-      to,
+      to: payload.to,
       subject: payload.subject,
       text: payload.text
     })

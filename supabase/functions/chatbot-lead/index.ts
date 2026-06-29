@@ -1,6 +1,6 @@
 import { handleOptions, jsonResponse } from "../_shared/cors.ts";
 import { getServiceClient } from "../_shared/supabase.ts";
-import { sendAdminNotification } from "../_shared/notify.ts";
+import { sendAdminNotification, sendCustomerNotification } from "../_shared/notify.ts";
 
 const bucketName = "flyer-files";
 
@@ -74,10 +74,15 @@ Deno.serve(async (request) => {
       };
       const { error } = await supabase.from("diagnosis_requests").insert(row);
       if (error) throw error;
-      await sendAdminNotification({
-        subject: "【無料チラシ診断】新しい申込が入りました",
-        text: buildDiagnosisNotice(row)
-      });
+      await Promise.all([
+        notifySafely(() =>
+          sendAdminNotification({
+            subject: "【無料チラシ診断】新しい申込が入りました",
+            text: buildDiagnosisNotice(row)
+          })
+        ),
+        notifySafely(() => sendDiagnosisAutoReply(row))
+      ]);
       return jsonResponse({ ok: true, id, type: "diagnosis" });
     }
 
@@ -102,10 +107,12 @@ Deno.serve(async (request) => {
     };
     const { error } = await supabase.from("contact_requests").insert(row);
     if (error) throw error;
-    await sendAdminNotification({
-      subject: "【無料診断LP】チャット相談が入りました",
-      text: buildContactNotice(row)
-    });
+    await notifySafely(() =>
+      sendAdminNotification({
+        subject: "【無料診断LP】チャット相談が入りました",
+        text: buildContactNotice(row)
+      })
+    );
     return jsonResponse({ ok: true, id, type: "contact" });
   } catch (error) {
     console.error(error);
@@ -142,4 +149,55 @@ function buildContactNotice(row: Record<string, unknown>) {
     `■ 会社名・店舗名\n${row.company_name || "-"}`,
     `■ 相談内容\n${row.inquiry_detail || row.promotion_challenge || "-"}`
   ].join("\n\n");
+}
+
+async function notifySafely(send: () => Promise<unknown>) {
+  try {
+    return await send();
+  } catch (error) {
+    console.error("notification failed", error);
+    return { skipped: true, error: String(error?.message || error) };
+  }
+}
+
+async function sendDiagnosisAutoReply(row: Record<string, unknown>) {
+  const email = String(row.email || "").trim();
+  if (!email) return { skipped: true };
+
+  return sendCustomerNotification({
+    to: email,
+    subject: "無料チラシ診断のお申し込みありがとうございます",
+    text: buildDiagnosisAutoReply(row)
+  });
+}
+
+function buildDiagnosisAutoReply(row: Record<string, unknown>) {
+  const name = String(row.customer_name || "").trim() || "お客様";
+  return [
+    `${name} 様`,
+    "",
+    "この度は、無料チラシ診断にお申し込みいただきありがとうございます。",
+    "",
+    "お送りいただいたチラシ画像/PDFと入力内容をもとに、",
+    "7つの視点で「反応が出にくい原因」と「改善ポイント」を確認いたします。",
+    "",
+    "診断レポートでは、主に以下を確認します。",
+    "",
+    "・誰に向けたチラシになっているか",
+    "・見出しや訴求が伝わりやすいか",
+    "・問い合わせや予約につながる導線があるか",
+    "・今申し込む理由が伝わっているか",
+    "・改善すると反応につながりやすいポイント",
+    "",
+    "診断結果は、通常1〜3営業日以内にメールにてお送りします。",
+    "",
+    "なお、診断後に制作プランをご案内する場合がありますが、",
+    "無理な営業は行いません。",
+    "まずは現在のチラシの改善点を知る目的で、安心してご利用ください。",
+    "",
+    "どうぞよろしくお願いいたします。",
+    "",
+    "Enso Bloom",
+    "無料チラシ診断担当"
+  ].join("\n");
 }
