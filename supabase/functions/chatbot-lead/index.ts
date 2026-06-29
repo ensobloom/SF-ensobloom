@@ -101,6 +101,19 @@ Deno.serve(async (request) => {
       return jsonResponse({ ok: true, id, type: "diagnosis" });
     }
 
+    const contactValidation = validateContactPayload(payload, intakeType);
+    if (!contactValidation.valid) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "required_fields_missing",
+          message: contactValidation.message,
+          missing: contactValidation.missing
+        },
+        400
+      );
+    }
+
     const row = {
       id,
       intake_type: intakeType,
@@ -160,6 +173,43 @@ function validateDiagnosisPayload(payload: Record<string, unknown>, flyerFile: F
       valid: false,
       missing: uniqueMissing,
       message: `無料診断の受付に必要な項目が不足しています：${uniqueMissing.join("、")}`
+    };
+  }
+
+  return { valid: true, missing: [], message: "" };
+}
+
+function validateContactPayload(payload: Record<string, unknown>, intakeType: string) {
+  const requiredFields = [
+    ["contactName", "お名前"],
+    ["email", "メールアドレス"],
+    ["phone", "電話番号"]
+  ];
+
+  if (intakeType === "production_inquiry") {
+    requiredFields.push(["inquiryDetail", "相談したい内容"]);
+    requiredFields.push(["desiredDeliverable", "作りたいもの"]);
+  } else if (intakeType === "promotion_consulting") {
+    requiredFields.push(["promotionIssue", "現在の販促課題"]);
+    requiredFields.push(["consultationScope", "相談したい範囲"]);
+  } else {
+    requiredFields.push(["inquiryDetail", "相談内容"]);
+  }
+
+  const missing = requiredFields
+    .filter(([key]) => !hasText(payload[key]))
+    .map(([, label]) => label);
+
+  if (hasText(payload.email) && !isValidEmail(payload.email)) missing.push("有効なメールアドレス");
+  if (hasText(payload.phone) && !isValidPhone(payload.phone)) missing.push("有効な電話番号");
+  if (!hasConsent(payload.consent)) missing.push("同意確認");
+
+  const uniqueMissing = [...new Set(missing)];
+  if (uniqueMissing.length) {
+    return {
+      valid: false,
+      missing: uniqueMissing,
+      message: `受付に必要な項目が不足しています：${uniqueMissing.join("、")}`
     };
   }
 

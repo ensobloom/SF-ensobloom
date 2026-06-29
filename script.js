@@ -2997,9 +2997,8 @@ const CHAT_ROUTE_FIELDS = {
     {
       name: "phone",
       label: "電話番号",
-      optional: true,
       question:
-        "電話での連絡を希望する場合は、電話番号も教えてください。\nメールのみでよければ「なし」で大丈夫です。"
+        "連絡先として電話番号を教えてください。\n制作内容や見積もり確認が必要な場合にだけ使用します。"
     }
   ],
   promotion_consulting: [
@@ -3058,9 +3057,8 @@ const CHAT_ROUTE_FIELDS = {
     {
       name: "phone",
       label: "電話番号",
-      optional: true,
       question:
-        "電話での連絡を希望する場合は、電話番号も教えてください。\nメールのみでよければ「なし」で大丈夫です。"
+        "連絡先として電話番号を教えてください。\n相談内容の確認が必要な場合にだけ使用します。"
     }
   ]
 };
@@ -3435,10 +3433,10 @@ function handleText(rawText) {
     );
     return;
   }
-  if (state.intakeType === "free_diagnosis" && stage.name === "phone" && !isValidPhone(text)) {
+  if (stage.name === "phone" && !isValidPhone(text)) {
     addMessage(
       "bot",
-      "無料診断では電話番号も必要です。\n診断内容の確認が必要な場合にだけ使用しますので、連絡可能な番号を入力してください。"
+      "受付後に連絡できる電話番号が必要です。\n内容確認が必要な場合にだけ使用しますので、連絡可能な番号を入力してください。"
     );
     return;
   }
@@ -4163,9 +4161,8 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "phone",
       label: "電話番号",
-      optional: true,
       question:
-        "電話での連絡を希望する場合は、電話番号も教えてください。\nメールのみでよければ「なし」で大丈夫です。"
+        "連絡先として電話番号を教えてください。\n制作内容や見積もり確認が必要な場合にだけ使用します。"
     }
   ],
   promotion_consulting: [
@@ -4228,9 +4225,8 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "phone",
       label: "電話番号",
-      optional: true,
       question:
-        "電話での連絡を希望する場合は、電話番号も教えてください。\nメールのみでよければ「なし」で大丈夫です。"
+        "連絡先として電話番号を教えてください。\n相談内容の確認が必要な場合にだけ使用します。"
     }
   ]
 };
@@ -4596,10 +4592,10 @@ function handleText(rawText) {
     );
     return;
   }
-  if (state.intakeType === "free_diagnosis" && currentStage.name === "phone" && !isValidPhone(text)) {
+  if (currentStage.name === "phone" && !isValidPhone(text)) {
     addMessage(
       "bot",
-      "無料診断では電話番号も必要です。\n診断内容の確認が必要な場合にだけ使用しますので、連絡可能な番号を入力してください。"
+      "受付後に連絡できる電話番号が必要です。\n内容確認が必要な場合にだけ使用しますので、連絡可能な番号を入力してください。"
     );
     return;
   }
@@ -4829,19 +4825,19 @@ function getSupportResponse(text, options = {}) {
   if (/会社名なし|店舗名なし|屋号なし|匿名|名前.*出したくない|店名.*出したくない|個人.*(大丈夫|可能|でも|ですか)|個人事業主.*(大丈夫|可能|でも|ですか)/.test(text)) {
     return {
       message:
-        "会社名・店舗名は任意です。\n無料診断では、診断レポートを確実にお届けするために、お名前・メールアドレス・電話番号を確認しています。掲載名を出したくない場合は、その旨を入力してください。"
+        "会社名・店舗名は任意です。\nただし、無料診断・制作問い合わせ・販促相談では、受付後に連絡できるように、お名前・メールアドレス・電話番号を確認しています。掲載名を出したくない場合は、その旨を入力してください。"
     };
   }
   if (/電話番号|電話.*必要|電話なし|メールだけ/.test(text)) {
     if (state.intakeType === "free_diagnosis" || !state.intakeType) {
       return {
         message:
-          "無料診断では、診断内容の確認やメール不達時の連絡のため、電話番号も確認しています。\n営業電話を前提にしたものではありません。診断内容の確認が必要な場合にだけ使用します。\n\n制作・料金問い合わせや販促相談の場合は、電話番号は任意です。"
+          "無料診断・制作問い合わせ・販促相談では、受付後に連絡できるように電話番号も確認しています。\n営業電話を前提にしたものではありません。診断内容や見積もり内容の確認が必要な場合にだけ使用します。"
       };
     }
     return {
       message:
-        "制作・料金問い合わせや販促相談では、電話番号は任意です。\nメールのみで連絡を希望する場合は、電話番号の項目は「なし」で大丈夫です。"
+        "制作・料金問い合わせや販促相談でも、受付後に連絡できるように電話番号を確認しています。\n営業電話を前提にしたものではなく、内容確認が必要な場合にだけ使用します。"
     };
   }
   if (/求人|採用|スタッフ募集|人材募集|アルバイト|パート/.test(text)) {
@@ -5129,11 +5125,11 @@ function validateChatLead(data) {
       message: "メールアドレスの形式が少し違うようです。\n診断レポートや案内を届けるため、もう一度確認して入力してください。"
     };
   }
-  if (state.intakeType === "free_diagnosis" && !isValidPhone(data.phone)) {
+  if (!isValidPhone(data.phone)) {
     return {
       valid: false,
       field: "phone",
-      message: "無料診断では電話番号も必要です。\n診断内容の確認が必要な場合にだけ使用しますので、連絡可能な番号を入力してください。"
+      message: "受付後に連絡できる電話番号が必要です。\n内容確認が必要な場合にだけ使用しますので、連絡可能な番号を入力してください。"
     };
   }
   if (state.intakeType === "free_diagnosis" && !data.flyer_file) {
