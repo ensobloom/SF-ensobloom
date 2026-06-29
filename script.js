@@ -1412,6 +1412,7 @@ function applyAdminView() {
   const params = new URLSearchParams(window.location.search);
   const view = params.get("view") || "dashboard";
   document.body.dataset.adminView = view;
+  updateAdminViewHeading(view);
 
   document.querySelectorAll("[data-admin-view]").forEach((section) => {
     const views = String(section.dataset.adminView || "").split(/\s+/);
@@ -1421,6 +1422,43 @@ function applyAdminView() {
   document.querySelectorAll("[data-admin-nav]").forEach((link) => {
     link.classList.toggle("is-active", link.dataset.adminNav === view);
   });
+}
+
+function updateAdminViewHeading(view) {
+  const headings = {
+    dashboard: {
+      title: "ダッシュボード",
+      lead: "無料診断、問い合わせ、制作案件、納品状況をまとめて確認します。"
+    },
+    intake: {
+      title: "無料診断LP受付・問い合わせ",
+      lead: "無料診断の申し込み、制作相談、販促相談、直接問い合わせの内容を確認します。"
+    },
+    chat: {
+      title: "チャットボット分析",
+      lead: "チャットの開封、ボタン押下、悩み、受付導線を確認します。"
+    },
+    board: {
+      title: "案件ボード",
+      lead: "制作依頼、進行状況、修正対応、納品ステータスを管理します。"
+    },
+    sales: {
+      title: "売上管理",
+      lead: "契約中プラン、決済状況、入金管理を確認します。"
+    },
+    detail: {
+      title: "案件詳細",
+      lead: "選択中の案件へ返信、納品、ステータス更新を行います。"
+    },
+    reply: {
+      title: "顧客へ返信・納品登録",
+      lead: "ユーザーページに反映するメッセージや納品ファイルを登録します。"
+    }
+  };
+  const current = headings[view] || headings.dashboard;
+  setText("adminViewTitle", current.title);
+  setText("adminViewLead", current.lead);
+  document.title = `${current.title} - Enso Bloom管理画面`;
 }
 
 function initAdminAuth() {
@@ -1926,7 +1964,12 @@ function renderAdminEntries() {
 }
 
 function renderAdminDashboardInbox() {
-  const target = document.getElementById("adminDashboardInbox");
+  renderAdminInboxList("adminDashboardInbox", 10);
+  renderAdminInboxList("adminIntakeInbox", 12);
+}
+
+function renderAdminInboxList(elementId, limit) {
+  const target = document.getElementById(elementId);
   if (!target) return;
 
   const entries = [
@@ -1967,7 +2010,7 @@ function renderAdminDashboardInbox() {
   }
 
   target.innerHTML = entries
-    .slice(0, 10)
+    .slice(0, limit)
     .map((entry) => {
       const title = entry.customer_name || entry.name || entry.company_name || entry.email || "未入力";
       const rows = prioritizeAdminEntryFields(entry.adminInboxFields, entry)

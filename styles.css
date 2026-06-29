@@ -8440,6 +8440,8 @@ a {
 }
 
 .admin-intake-section {
+  display: grid;
+  gap: 18px;
   background:
     radial-gradient(circle at 12% 10%, rgba(216, 32, 49, 0.06), transparent 26%),
     linear-gradient(180deg, #fffdfc 0%, #fff8fa 100%);
@@ -9238,6 +9240,7 @@ a {
 }
 
 .admin-intake-stack {
+  display: grid;
   grid-template-columns: 1fr;
 }
 
