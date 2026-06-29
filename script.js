@@ -56,6 +56,15 @@ function getBackendHeaders(includeJson = true) {
   return headers;
 }
 
+function getAdminHeaders(includeJson = true) {
+  const headers = getBackendHeaders(includeJson);
+  const token = sessionStorage.getItem("owner_admin_token");
+  if (token) {
+    headers["X-Admin-Token"] = token;
+  }
+  return headers;
+}
+
 async function postJsonEndpoint(key, payload) {
   const endpoint = getEndpoint(key);
   if (!endpoint) {
@@ -188,6 +197,7 @@ const fields = [
 
 const labels = {
   flyer_file: "チラシ画像/PDF",
+  flyer_file_url: "チラシ画像/PDF",
   issue_text: "困っていること",
   diagnosis_focus: "重点確認ポイント",
   industry: "業種",
@@ -365,6 +375,10 @@ const adminPasswordToggle = document.getElementById("adminPasswordToggle");
 
 let selectedPortalProjectId = "";
 let selectedAdminProjectId = "";
+const remoteAdminEntries = {
+  diagnosis: null,
+  contact: null
+};
 
 if (chatShell) {
   chatShell.dataset.open = "false";
@@ -1311,7 +1325,7 @@ function initPortal() {
   renderPortal();
 }
 
-function initAdmin() {
+async function initAdmin() {
   applyAdminView();
   clearAdminPrototypeDemoData();
   const projects = loadAdminProjects();
@@ -1350,6 +1364,7 @@ function initAdmin() {
     salesSection.addEventListener("click", handleAdminSalesAction);
   }
 
+  await fetchAdminRemoteEntries();
   renderAdmin();
 }
 
@@ -1404,6 +1419,8 @@ async function handleAdminLogin(event) {
           adminLoginStatus.textContent = "ログインしました。";
           adminLoginStatus.classList.remove("error");
         }
+        await fetchAdminRemoteEntries();
+        renderAdmin();
         return;
       }
       if (adminLoginStatus) {
@@ -1433,6 +1450,8 @@ async function handleAdminLogin(event) {
       adminLoginStatus.textContent = "ログインしました。";
       adminLoginStatus.classList.remove("error");
     }
+    await fetchAdminRemoteEntries();
+    renderAdmin();
     return;
   }
 
@@ -1820,8 +1839,8 @@ function renderAdmin() {
 }
 
 function renderAdminMetrics(projects) {
-  const diagnosisEntries = loadStoredEntries(STORAGE_KEY);
-  const contactEntries = loadStoredEntries(CONTACT_STORAGE_KEY);
+  const diagnosisEntries = getAdminDiagnosisEntries();
+  const contactEntries = getAdminContactEntries();
   setText("adminPendingCount", `${projects.filter((project) => project.status === "受付確認中").length}件`);
   setText("adminWorkingCount", `${projects.filter((project) => project.status === "制作中").length}件`);
   setText("adminRevisionCount", `${projects.filter((project) => project.status === "修正対応").length}件`);
@@ -1831,23 +1850,28 @@ function renderAdminMetrics(projects) {
 }
 
 function renderAdminEntries() {
-  renderAdminEntryList("adminDiagnosisEntries", loadStoredEntries(STORAGE_KEY), [
+  renderAdminEntryList("adminDiagnosisEntries", getAdminDiagnosisEntries(), [
     "customer_name",
     "email",
+    "phone",
     "company_name",
     "industry",
     "issue_text",
     "flyer_purpose",
+    "target_audience",
     "distribution_method",
-    "distribution_area",
     "desired_response",
     "current_response_status",
+    "review_focus",
+    "desired_improvement",
+    "flyer_file_url",
     "flyer_file"
   ]);
-  renderAdminEntryList("adminContactEntries", loadStoredEntries(CONTACT_STORAGE_KEY), [
+  renderAdminEntryList("adminContactEntries", getAdminContactEntries(), [
     "name",
     "customer_name",
     "email",
+    "phone",
     "company_name",
     "business_type",
     "industry",
@@ -1857,6 +1881,57 @@ function renderAdminEntries() {
     "promotion_challenge",
     "message"
   ]);
+}
+
+function getAdminDiagnosisEntries() {
+  return remoteAdminEntries.diagnosis || loadStoredEntries(STORAGE_KEY);
+}
+
+function getAdminContactEntries() {
+  return remoteAdminEntries.contact || loadStoredEntries(CONTACT_STORAGE_KEY);
+}
+
+async function fetchAdminRemoteEntries() {
+  const endpoint = getEndpoint("adminLeads");
+  if (!endpoint || sessionStorage.getItem("owner_admin_authenticated") !== "true") return;
+  try {
+    const response = await fetch(endpoint, {
+      method: "GET",
+      headers: getAdminHeaders(false)
+    });
+    if (!response.ok) {
+      throw new Error(`adminLeads failed: ${response.status}`);
+    }
+    const result = await response.json();
+    if (Array.isArray(result.diagnosisEntries)) {
+      remoteAdminEntries.diagnosis = result.diagnosisEntries.map(normalizeRemoteDiagnosisEntry);
+    }
+    if (Array.isArray(result.contactEntries)) {
+      remoteAdminEntries.contact = result.contactEntries.map(normalizeRemoteContactEntry);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function normalizeRemoteDiagnosisEntry(entry) {
+  return {
+    ...entry,
+    flyer_file: entry.flyer_file_name
+      ? {
+          name: entry.flyer_file_name,
+          size: entry.flyer_file_size || 0,
+          type: entry.flyer_file_type || ""
+        }
+      : ""
+  };
+}
+
+function normalizeRemoteContactEntry(entry) {
+  return {
+    ...entry,
+    name: entry.name || entry.customer_name || ""
+  };
 }
 
 function renderAdminEntryList(elementId, entries, fields) {
@@ -1878,7 +1953,7 @@ function renderAdminEntryList(elementId, entries, fields) {
           (key) => `
             <div>
               <dt>${escapeHtml(ADMIN_ENTRY_LABELS[key] || key)}</dt>
-              <dd>${escapeHtml(formatAdminEntryValue(entry[key]))}</dd>
+              <dd>${formatAdminEntryHtml(key, entry[key])}</dd>
             </div>
           `
         )
@@ -1894,6 +1969,16 @@ function renderAdminEntryList(elementId, entries, fields) {
       `;
     })
     .join("");
+}
+
+function formatAdminEntryHtml(key, value) {
+  if (key === "flyer_file_url" && value) {
+    const url = String(value);
+    if (/^https?:\/\//.test(url)) {
+      return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">チラシ画像/PDFを開く</a>`;
+    }
+  }
+  return escapeHtml(formatAdminEntryValue(value));
 }
 
 function loadStoredEntries(key) {
@@ -1940,8 +2025,8 @@ function renderAdminChatAnalytics() {
 }
 
 function getAdminChatLeads() {
-  const diagnosisEntries = loadStoredEntries(STORAGE_KEY).map((entry) => normalizeAdminChatLead(entry, "free_diagnosis"));
-  const contactEntries = loadStoredEntries(CONTACT_STORAGE_KEY).map((entry) => normalizeAdminChatLead(entry, getAdminEntryRoute(entry)));
+  const diagnosisEntries = getAdminDiagnosisEntries().map((entry) => normalizeAdminChatLead(entry, "free_diagnosis"));
+  const contactEntries = getAdminContactEntries().map((entry) => normalizeAdminChatLead(entry, getAdminEntryRoute(entry)));
   return [...diagnosisEntries, ...contactEntries].sort((a, b) => adminDateValue(b.created_at) - adminDateValue(a.created_at));
 }
 

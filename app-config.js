@@ -7,6 +7,7 @@ window.EN_SO_BLOOM_CONFIG = {
     contactInquiry: "",
     customerLogin: "",
     adminLogin: "",
+    adminLeads: "",
     projectRequest: "",
     projectRevision: "",
     adminMessage: "",

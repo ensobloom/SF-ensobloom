@@ -25,6 +25,7 @@ window.EN_SO_BLOOM_CONFIG = {
     contactInquiry: "/contact-inquiry",
     customerLogin: "/customer-login",
     adminLogin: "/admin-login",
+    adminLeads: "/admin-leads",
     projectRequest: "/project-request",
     projectRevision: "/project-revision",
     adminMessage: "/admin-message",
@@ -97,6 +98,22 @@ window.EN_SO_BLOOM_CONFIG = {
 
 現在のフロントにはローカル確認用のログイン判定も残しています。本番では必ず `adminLogin` endpoint を設定してください。
 
+### adminLeads
+
+オーナー側管理画面で、無料診断申込・問い合わせ・チラシ画像/PDFリンクを取得します。`GET` で呼び出します。
+
+管理者ログイン後に返される `token` を `X-Admin-Token` ヘッダーで送信します。
+
+```json
+{
+  "ok": true,
+  "diagnosisEntries": [],
+  "contactEntries": []
+}
+```
+
+PDF/画像はSupabase Storageの非公開bucketに保存し、このAPIで24時間有効の署名付きURLを返します。
+
 ### customerLogin
 
 制作依頼ポータルの契約者ログインをサーバー側で判定します。JSONで送信されます。
@@ -148,6 +165,7 @@ window.EN_SO_BLOOM_CONFIG = {
 - チラシ画像/PDFを `chatbotLead` にアップロード送信
 - 問い合わせフォームを外部APIへ送信
 - 管理者ログインを外部APIで判定
+- 管理画面で本番受付データとチラシ画像/PDFリンクを取得
 - マイページの制作依頼・修正依頼を外部APIへ送信
 - 管理画面の返信・納品・決済リンク作成を外部APIへ送信
 - API未設定時はローカル保存で動作確認
@@ -158,6 +176,24 @@ window.EN_SO_BLOOM_CONFIG = {
 2. `chatbotLead` でファイル保存と管理者通知メールを実装
 3. `contactInquiry` で問い合わせ保存と管理者通知メールを実装
 4. `adminLogin` をサーバー側認証に切り替え
-5. Stripeの本番決済リンク、またはCheckout作成APIを設定
-6. `app-config.js` に本番API URLを設定
-7. 送信テスト、通知テスト、ファイル確認、決済テストを実施
+5. `adminLeads` で管理画面から受付データを確認
+6. Stripeの本番決済リンク、またはCheckout作成APIを設定
+7. `app-config.js` に本番API URLを設定
+8. 送信テスト、通知テスト、ファイル確認、決済テストを実施
+
+## Supabase Edge Functions 環境変数
+
+Supabase側に以下を設定してください。
+
+```text
+SUPABASE_URL
+SUPABASE_SERVICE_ROLE_KEY
+OWNER_ID
+OWNER_PASSWORD
+ADMIN_READ_TOKEN
+ADMIN_NOTIFY_EMAIL
+RESEND_API_KEY
+FROM_EMAIL
+```
+
+`OWNER_PASSWORD` や `SUPABASE_SERVICE_ROLE_KEY` は公開ファイルには置かず、Supabase Edge FunctionsのSecretsに設定します。
