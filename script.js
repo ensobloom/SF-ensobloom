@@ -3389,7 +3389,8 @@ function handleText(rawText) {
 
   const stageForSupportV2 = getCurrentStage();
   const isChoiceAnswerV2 = isStageChoiceAnswer(stageForSupportV2, text);
-  const treatAsQuestionV2 = isQuestionLike(text) && !(stageForSupportV2?.choices?.length && !isExplicitQuestionLike(text));
+  const forceFieldAnswerV2 = shouldTreatAsFieldAnswer(stageForSupportV2, text);
+  const treatAsQuestionV2 = isQuestionLike(text) && !forceFieldAnswerV2;
   const preferFieldAnswerV2 = stageForSupportV2 && [
     "inquiry_detail",
     "production_item",
@@ -3401,7 +3402,7 @@ function handleText(rawText) {
     "consulting_scope",
     "goal"
   ].includes(stageForSupportV2.name);
-  const support = preferFieldAnswerV2 || isChoiceAnswerV2 || !treatAsQuestionV2 ? null : getSupportResponse(text);
+  const support = preferFieldAnswerV2 || isChoiceAnswerV2 || forceFieldAnswerV2 || !treatAsQuestionV2 ? null : getSupportResponse(text);
   if (support) {
     addMessage("bot", support.message);
     if (support.route) {
@@ -3627,6 +3628,11 @@ function isStageChoiceAnswer(stage, text) {
   if (!stage?.choices?.length) return false;
   const normalized = String(text || "").trim();
   return stage.choices.some((choice) => String(choice).trim() === normalized);
+}
+
+function shouldTreatAsFieldAnswer(stage, text) {
+  if (!stage || isExplicitQuestionLike(text)) return false;
+  return !["flyer_file", "email", "phone"].includes(stage.name);
 }
 
 function addProgress(stageName) {
@@ -4579,7 +4585,8 @@ function handleText(rawText) {
 
   const currentStage = getCurrentStage();
   const isChoiceAnswer = isStageChoiceAnswer(currentStage, text);
-  const treatAsQuestion = isQuestionLike(text) && !(currentStage?.choices?.length && !isExplicitQuestionLike(text));
+  const forceFieldAnswer = shouldTreatAsFieldAnswer(currentStage, text);
+  const treatAsQuestion = isQuestionLike(text) && !forceFieldAnswer;
   const supportAllowed = !currentStage || ![
     "inquiry_detail",
     "production_item",
@@ -4594,7 +4601,7 @@ function handleText(rawText) {
     "current_response_status",
     "strengths"
   ].includes(currentStage.name);
-  const support = !isChoiceAnswer && treatAsQuestion ? getSupportResponse(text, { allowRoute: supportAllowed }) : null;
+  const support = !isChoiceAnswer && !forceFieldAnswer && treatAsQuestion ? getSupportResponse(text, { allowRoute: supportAllowed }) : null;
   if (support) {
     addMessage("bot", support.message);
     if (support.route) {
@@ -4614,7 +4621,7 @@ function handleText(rawText) {
     return;
   }
 
-  if (!isChoiceAnswer && treatAsQuestion) {
+  if (!isChoiceAnswer && !forceFieldAnswer && treatAsQuestion) {
     addMessage(
       "bot",
       "その内容は、このチャットだけでは正確に断定できません。\n条件確認が必要なため、直接問い合わせで確認してください。\n\n受付を続ける場合は「受付を続ける」を押してください。"
