@@ -3716,7 +3716,6 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "target_audience",
       label: "主なターゲット",
-      optional: true,
       question:
         "主に誰に向けたチラシなのか、近いものを選んでください。\n具体的に分かる場合は自由に入力できます。",
       choices: [
@@ -3732,7 +3731,6 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "distribution_method",
       label: "配布方法",
-      optional: true,
       question:
         "このチラシは、どのように配布している、または配布する予定ですか？",
       choices: [
@@ -3788,7 +3786,6 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "current_response_status",
       label: "現在の反応状況",
-      optional: true,
       question:
         "今の反応状況も、分かる範囲で選んでください。",
       choices: [
@@ -3819,7 +3816,6 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "strengths",
       label: "自社の強み",
-      optional: true,
       question:
         "お店やサービスの強みを選んでください。\n具体的な強みがあれば自由に入力できます。",
       choices: [
@@ -3852,7 +3848,6 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "current_offer",
       label: "現在のオファー・特典",
-      optional: true,
       question:
         "今のチラシに、特典や申し込み理由はありますか？",
       choices: [
@@ -3868,7 +3863,6 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "contact_flow",
       label: "問い合わせ導線",
-      optional: true,
       question:
         "問い合わせや申し込みは、どこから受ける想定ですか？",
       choices: [
@@ -3891,7 +3885,6 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "review_focus",
       label: "特に見てほしいポイント",
-      optional: true,
       question:
         "診断で特に見てほしいところを選んでください。",
       choices: [
@@ -3907,7 +3900,6 @@ const CHATBOT_V3_FIELDS = {
     {
       name: "desired_improvement",
       label: "希望する改善方向",
-      optional: true,
       question:
         "希望する改善方向があれば選んでください。",
       choices: [
@@ -3936,6 +3928,12 @@ const CHATBOT_V3_FIELDS = {
       label: "メールアドレス",
       question:
         "診断レポートを送るメールアドレスを教えてください。\n入力間違いがあるとレポートを届けられないため、確認できるアドレスを入力してください。"
+    },
+    {
+      name: "phone",
+      label: "電話番号",
+      question:
+        "念のため、電話番号も教えてください。\n診断内容の確認が必要な場合にだけ使用します。"
     }
   ],
   production_inquiry: [
@@ -4125,7 +4123,8 @@ const CHATBOT_V3_SUMMARY_FIELDS = {
     "desired_improvement",
     "company_name",
     "customer_name",
-    "email"
+    "email",
+    "phone"
   ],
   production_inquiry: [
     "intake_type",
