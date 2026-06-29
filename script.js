@@ -2396,7 +2396,12 @@ function renderAdminLatestLeads(leads) {
 }
 
 function renderAdminLeadArchive(leads) {
-  const target = document.getElementById("chatLeadArchive");
+  renderAdminLeadArchiveList("chatLeadArchive", leads);
+  renderAdminLeadArchiveList("adminIntakeLeadArchive", leads);
+}
+
+function renderAdminLeadArchiveList(elementId, leads) {
+  const target = document.getElementById(elementId);
   if (!target) return;
   if (!leads.length) {
     target.innerHTML = '<div class="empty-state">まだ問い合わせ・申し込み内容はありません。</div>';

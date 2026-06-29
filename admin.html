@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;800;900&family=Noto+Serif+JP:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/png" href="assets/logo-mark.png" />
-    <link rel="stylesheet" href="styles.css?v=20260629-intake-view1" />
+    <link rel="stylesheet" href="styles.css?v=20260630-intake-archive1" />
   </head>
   <body class="admin-page admin-dashboard-page">
     <section class="admin-login-screen" aria-labelledby="admin-login-title">
@@ -208,6 +208,16 @@
               <a class="admin-outline-button" href="admin.html?view=chat">チャットボット分析を見る</a>
             </div>
             <div class="admin-entry-list admin-dashboard-inbox-list" id="adminIntakeInbox"></div>
+          </article>
+
+          <article class="admin-panel admin-chat-panel admin-intake-archive">
+            <div class="admin-panel-head">
+              <div>
+                <h2>問い合わせ・申し込み内容</h2>
+                <p>チャットボット分析と同じ詳細情報です。無料診断申込、制作相談、販促相談、直接問い合わせを確認できます。</p>
+              </div>
+            </div>
+            <div class="admin-archive-list" id="adminIntakeLeadArchive"></div>
           </article>
 
           <article class="admin-panel admin-intake-panel">
@@ -461,6 +471,6 @@
     </div>
 
     <script src="app-config.js?v=20260629-supabase-leads1"></script>
-    <script src="script.js?v=20260629-intake-view1"></script>
+    <script src="script.js?v=20260630-intake-archive1"></script>
   </body>
 </html>
