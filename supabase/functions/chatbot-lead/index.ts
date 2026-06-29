@@ -152,11 +152,7 @@ function validateDiagnosisPayload(payload: Record<string, unknown>, flyerFile: F
   const requiredFields = [
     ["contactName", "お名前"],
     ["email", "メールアドレス"],
-    ["phone", "電話番号"],
-    ["industry", "業種"],
-    ["flyerPurpose", "チラシの目的"],
-    ["desiredResponse", "増やしたい反応"],
-    ["reviewFocus", "特に見てほしいポイント"]
+    ["phone", "電話番号"]
   ];
   const missing = requiredFields
     .filter(([key]) => !hasText(payload[key]))

@@ -76,7 +76,7 @@ async function postJsonEndpoint(key, payload) {
     body: JSON.stringify(payload)
   });
   if (!response.ok) {
-    throw new Error(`${key} failed: ${response.status}`);
+    throw await buildEndpointError(response, key);
   }
   return response.json().catch(() => ({ ok: true }));
 }
@@ -92,9 +92,27 @@ async function postFormEndpoint(key, formData, fallbackEndpoint = "") {
     body: formData
   });
   if (!response.ok) {
-    throw new Error(`${key} failed: ${response.status}`);
+    throw await buildEndpointError(response, key);
   }
   return response.json().catch(() => ({ ok: true }));
+}
+
+async function buildEndpointError(response, key) {
+  let detail = null;
+  try {
+    detail = await response.json();
+  } catch {
+    try {
+      detail = { message: await response.text() };
+    } catch {
+      detail = null;
+    }
+  }
+  const message = detail?.message || detail?.error || `${key} failed: ${response.status}`;
+  const error = new Error(message);
+  error.status = response.status;
+  error.details = detail;
+  return error;
 }
 
 const initialData = () => ({
@@ -5084,7 +5102,19 @@ async function completeApplication() {
   } catch (error) {
     state.isSubmitting = false;
     state.errorMessage = error.message;
-    addMessage("bot", "送信中に問題が起きました。\n少し時間をおいて、もう一度試してください。");
+    const missingField = getFieldFromServerMissing(error.details?.missing || []);
+    addMessage(
+      "bot",
+      `送信できませんでした。\n${error.message || "入力内容を確認してください。"}`
+    );
+    if (missingField) {
+      if (missingField === "consent") {
+        showConsentStep();
+        return;
+      }
+      askStage(missingField);
+      return;
+    }
     setActions([
       { label: "もう一度送信する", kind: "confirm", important: true },
       { label: "管理者通知をコピー", kind: "copy" },
@@ -5114,6 +5144,25 @@ async function completeApplication() {
     { label: "管理者通知をコピー", kind: "copy" },
     { label: "新しく相談する", kind: "reset" }
   ]);
+}
+
+function getFieldFromServerMissing(missing = []) {
+  const labelsToFields = {
+    "チラシ画像/PDF": "flyer_file",
+    "お名前": "customer_name",
+    "メールアドレス": "email",
+    "有効なメールアドレス": "email",
+    "電話番号": "phone",
+    "有効な電話番号": "phone",
+    "同意確認": "consent",
+    "相談したい内容": "inquiry_detail",
+    "相談内容": "inquiry_detail",
+    "作りたいもの": "production_item",
+    "現在の販促課題": "promotion_challenge",
+    "相談したい範囲": "consulting_scope"
+  };
+  const found = missing.find((label) => labelsToFields[label]);
+  return found ? labelsToFields[found] : "";
 }
 
 function validateChatLead(data) {
