@@ -272,6 +272,9 @@ const ADMIN_ROUTE_LABELS = {
 const ADMIN_ARCHIVE_FIELDS = {
   free_diagnosis: [
     "initial_concern",
+    "issue_text",
+    "flyer_file_url",
+    "flyer_file_download_url",
     "flyer_file",
     "industry",
     "flyer_purpose",
@@ -1983,8 +1986,12 @@ function renderAdminInboxList(elementId, limit) {
         "customer_name",
         "email",
         "phone",
+        "industry",
         "issue_text",
-        "flyer_purpose"
+        "flyer_purpose",
+        "distribution_method",
+        "desired_response",
+        "current_response_status"
       ]
     })),
     ...getAdminContactEntries().map((entry) => ({
@@ -2015,7 +2022,7 @@ function renderAdminInboxList(elementId, limit) {
       const title = entry.customer_name || entry.name || entry.company_name || entry.email || "未入力";
       const rows = prioritizeAdminEntryFields(entry.adminInboxFields, entry)
         .filter((key) => entry[key])
-        .slice(0, 7)
+        .slice(0, 12)
         .map((key) => `
           <div>
             <dt>${escapeHtml(ADMIN_ENTRY_LABELS[key] || key)}</dt>
@@ -2222,7 +2229,15 @@ function normalizeAdminChatLead(entry, fallbackRoute) {
     created_at: entry.created_at || payload.createdAt || "",
     customer_name: entry.customer_name || entry.name || payload.contactName || "",
     email: entry.email || payload.email || "",
+    phone: entry.phone || payload.phone || "",
     company_name: entry.company_name || payload.companyName || "",
+    industry: entry.industry || payload.industry || "",
+    flyer_purpose: entry.flyer_purpose || payload.flyerPurpose || "",
+    distribution_method: entry.distribution_method || payload.distributionMethod || "",
+    desired_response: entry.desired_response || payload.desiredResponse || "",
+    current_response_status: entry.current_response_status || payload.currentResult || "",
+    flyer_file_url: entry.flyer_file_url || "",
+    flyer_file_download_url: entry.flyer_file_download_url || "",
     issue_text: entry.issue_text || entry.initial_concern || entry.inquiry_detail || entry.current_challenge || entry.promotion_challenge || entry.message || payload.issueText || payload.initialConcern || "",
     flyer_file: entry.flyer_file || (payload.flyerFileName ? { name: payload.flyerFileName, size: payload.flyerFileSize || 0 } : "")
   };
@@ -2418,7 +2433,7 @@ function renderAdminLeadArchiveList(elementId, leads) {
         .map((key) => `
           <div>
             <dt>${escapeHtml(ADMIN_ENTRY_LABELS[key] || key)}</dt>
-            <dd>${escapeHtml(formatAdminEntryValue(lead[key]))}</dd>
+            <dd>${formatAdminEntryHtml(key, lead[key])}</dd>
           </div>
         `)
         .join("");
