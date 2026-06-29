@@ -3814,34 +3814,73 @@ const CHATBOT_V3_FIELDS = {
       name: "inquiry_detail",
       label: "相談したい内容",
       question:
-        "制作・料金について相談したい内容を教えてください。\n\n例：チラシを作りたい、料金を知りたい、見積もりがほしい、サブスクを相談したい、急ぎで制作したい、などです。"
+        "制作・料金について相談したい内容を選んでください。\n近いものがなければ、そのまま自由に入力しても大丈夫です。",
+      choices: [
+        "チラシを作りたい",
+        "料金を知りたい",
+        "見積もりがほしい",
+        "サブスクを相談したい",
+        "急ぎで制作したい",
+        "何を作るべきか相談したい"
+      ]
     },
     {
       name: "production_item",
       label: "作りたいもの",
       question:
-        "今回作りたいもの、または相談したい制作物を教えてください。\n\n例：チラシ、ポスター、DM、メニュー表、求人チラシ、LINE画像、SNS投稿画像、LPなどです。"
+        "今回作りたいもの、または相談したい制作物を選んでください。\n複数ある場合は、近いものを選んだあとに補足できます。",
+      choices: [
+        "チラシ",
+        "求人チラシ",
+        "キャンペーン告知",
+        "店頭POP",
+        "LINE画像",
+        "SNS投稿画像",
+        "その他"
+      ]
     },
     {
       name: "preferred_timing",
       label: "希望時期",
       optional: true,
       question:
-        "希望の時期はありますか？\n\n例：できるだけ早く、今月中、来月配布予定、まだ未定、などです。"
+        "希望の時期はありますか？",
+      choices: [
+        "できるだけ早く",
+        "今週中に相談したい",
+        "今月中",
+        "来月配布予定",
+        "まだ未定"
+      ]
     },
     {
       name: "budget",
       label: "予算感",
       optional: true,
       question:
-        "差し支えなければ、予算感も教えてください。\n\n例：1万円以内、3万円前後、月額プランで相談したい、まだ分からない、などです。\n\nまだ分からない場合は「未定」で大丈夫です。"
+        "差し支えなければ、予算感も選んでください。\nまだ分からない場合は「未定」で大丈夫です。",
+      choices: [
+        "1万円以内",
+        "3万円前後",
+        "月額プランで相談したい",
+        "内容を見て相談したい",
+        "未定"
+      ]
     },
     {
       name: "current_challenge",
       label: "現在の課題",
       optional: true,
       question:
-        "今回、制作を考えている背景や課題も教えてください。\n\n例：反応がない、毎回作るのが大変、求人応募を増やしたい、デザインを整えたい、販促物を継続して作りたい、などです。"
+        "今回、制作を考えている背景や課題を選んでください。\n近いものがなければ自由に入力できます。",
+      choices: [
+        "反応がない",
+        "毎回作るのが大変",
+        "求人応募を増やしたい",
+        "デザインを整えたい",
+        "販促物を継続して作りたい",
+        "まだ整理できていない"
+      ]
     },
     {
       name: "company_name",
@@ -4625,6 +4664,8 @@ function askStage(stageName, options = {}) {
   addMessage("bot", options.editing ? `「${stage.label}」を修正します。\n\n${stage.question}` : stage.question);
   if (stage.action) {
     setActions([stage.action]);
+  } else if (stage.choices?.length) {
+    setActions(stage.choices);
   } else if (stage.optional) {
     setActions(["未定", "なし"]);
   } else {
@@ -4641,6 +4682,8 @@ function repeatCurrentQuestion() {
   addMessage("bot", `受付を続けます。\n\n${stage.question}`);
   if (stage.action) {
     setActions([stage.action]);
+  } else if (stage.choices?.length) {
+    setActions(stage.choices);
   } else if (stage.optional) {
     setActions(["未定", "なし"]);
   } else {
