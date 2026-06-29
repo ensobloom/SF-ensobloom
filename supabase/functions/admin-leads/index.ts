@@ -49,15 +49,20 @@ Deno.serve(async (request) => {
 async function withSignedFlyerUrl(supabase: ReturnType<typeof getServiceClient>, row: Record<string, unknown>) {
   const path = String(row.flyer_file_path || "");
   if (!path) return row;
-  const { data, error } = await supabase.storage
-    .from(bucketName)
-    .createSignedUrl(path, 60 * 60 * 24);
-  if (error) {
-    console.error(error);
+  const fileName = String(row.flyer_file_name || "flyer-file");
+  const [previewResult, downloadResult] = await Promise.all([
+    supabase.storage.from(bucketName).createSignedUrl(path, 60 * 60 * 24),
+    supabase.storage.from(bucketName).createSignedUrl(path, 60 * 60 * 24, {
+      download: fileName
+    })
+  ]);
+  if (previewResult.error || downloadResult.error) {
+    console.error(previewResult.error || downloadResult.error);
     return row;
   }
   return {
     ...row,
-    flyer_file_url: data.signedUrl
+    flyer_file_url: previewResult.data.signedUrl,
+    flyer_file_download_url: downloadResult.data.signedUrl
   };
 }

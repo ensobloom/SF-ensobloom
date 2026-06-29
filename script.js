@@ -198,6 +198,7 @@ const fields = [
 const labels = {
   flyer_file: "チラシ画像/PDF",
   flyer_file_url: "チラシ画像/PDF",
+  flyer_file_download_url: "ダウンロード",
   issue_text: "困っていること",
   diagnosis_focus: "重点確認ポイント",
   industry: "業種",
@@ -1886,6 +1887,7 @@ function renderAdminEntries() {
     "review_focus",
     "desired_improvement",
     "flyer_file_url",
+    "flyer_file_download_url",
     "flyer_file"
   ]);
   renderAdminEntryList("adminContactEntries", getAdminContactEntries(), [
@@ -1993,7 +1995,7 @@ function renderAdminEntryList(elementId, entries, fields) {
 	}
 
 function prioritizeAdminEntryFields(fields, entry) {
-  const priority = ["flyer_file_url", "flyer_file"];
+  const priority = ["flyer_file_url", "flyer_file_download_url", "flyer_file"];
   const priorityFields = priority.filter((key) => fields.includes(key) && entry[key]);
   const rest = fields.filter((key) => !priority.includes(key));
   return [...priorityFields, ...rest];
@@ -2004,6 +2006,12 @@ function formatAdminEntryHtml(key, value) {
     const url = String(value);
     if (/^https?:\/\//.test(url)) {
       return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">チラシ画像/PDFを開く</a>`;
+    }
+  }
+  if (key === "flyer_file_download_url" && value) {
+    const url = String(value);
+    if (/^https?:\/\//.test(url)) {
+      return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" download>ダウンロードする</a>`;
     }
   }
   return escapeHtml(formatAdminEntryValue(value));
