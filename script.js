@@ -619,6 +619,10 @@ function setActions(actions = []) {
     button.type = "button";
     button.textContent = config.label;
     if (config.important) button.classList.add("important");
+    if (shouldTrackChatAction(config)) {
+      button.dataset.cta = "true";
+      button.dataset.conversion = "true";
+    }
     button.addEventListener("click", () => {
       if (config.kind === "file") {
         if (flyerFileInput) flyerFileInput.click();
@@ -643,6 +647,20 @@ function setActions(actions = []) {
     });
     chatActions.appendChild(button);
   });
+}
+
+function shouldTrackChatAction(config) {
+  if (!config) return false;
+  if (config.kind === "file" || config.kind === "reset" || config.kind === "edit_menu" || config.kind === "faq_menu" || config.kind === "faq") {
+    return false;
+  }
+  return Boolean(
+    config.important ||
+    config.kind === "route" ||
+    config.kind === "confirm" ||
+    config.kind === "confirm_preview" ||
+    config.kind === "link"
+  );
 }
 
 function handleText(rawText) {
@@ -4529,6 +4547,10 @@ function setActions(actions = []) {
     button.type = "button";
     button.textContent = config.label;
     if (config.important) button.classList.add("important");
+    if (shouldTrackChatAction(config)) {
+      button.dataset.cta = "true";
+      button.dataset.conversion = "true";
+    }
     button.addEventListener("click", () => {
       logChatEvent("button_click", {
         label: config.label,
