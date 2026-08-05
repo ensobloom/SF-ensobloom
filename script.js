@@ -265,7 +265,7 @@ const ADMIN_ENTRY_LABELS = {
 const ADMIN_ROUTE_LABELS = {
   free_diagnosis: "無料チラシ診断",
   production_inquiry: "制作・料金相談",
-  promotion_consulting: "販促伴走相談",
+  promotion_consulting: "その他問い合わせ",
   direct_contact: "直接問い合わせ"
 };
 
@@ -837,7 +837,7 @@ function getSupportResponse(text) {
   if (questionLike && /営業|売り込|勧誘|しつこ/.test(normalized)) {
     return {
       message:
-        "ご安心ください。\n診断後に必要な方にはサブスクプランをご案内しますが、無理な営業は行いません。\n\nまずは、今のチラシの改善ポイントを知る目的でご利用ください。"
+        "ご安心ください。\n診断後に必要な方には反応設計型チラシ制作をご案内しますが、無理な営業は行いません。\n\nまずは、今のチラシの改善ポイントを知る目的でご利用ください。"
     };
   }
 
@@ -876,7 +876,7 @@ function getSupportResponse(text) {
   if (questionLike && /料金|価格|プラン|サブスク/.test(normalized)) {
     return {
       message:
-        "無料診断は0円です。\n\n診断後、ご希望の方にはチラシ制作サブスクをご案内します。\n\nライト：月2点まで 9,800円\nスタンダード：月5点まで 19,800円\nプレミアム：月8点まで 29,800円\n\n診断だけのご利用でも問題ありません。"
+        "無料診断は0円です。\n\n診断後、ご希望の方には反応設計型チラシ制作をご案内します。\nA4片面は33,000円、A4両面は55,000円が目安です。\n\n診断だけのご利用でも問題ありません。"
     };
   }
 
@@ -2512,7 +2512,7 @@ function getAdminEventLabel(event) {
 function renderAdminSales() {
   const records = loadAdminSalesRecords();
   const paidThisMonth = records.filter((record) => record.status === "入金済み" && isThisMonth(record.paid_at || record.created_at));
-  const activeContracts = records.filter((record) => record.billing_type === "月額" && record.contract_status === "契約中");
+  const activeContracts = records.filter((record) => record.billing_type === "継続" && record.contract_status === "契約中");
   const unpaid = records.filter((record) => record.status !== "入金済み");
   const monthlyTotal = paidThisMonth.reduce((sum, record) => sum + Number(record.amount || 0), 0);
   const mrrTotal = activeContracts.reduce((sum, record) => sum + Number(record.amount || 0), 0);
@@ -2529,7 +2529,7 @@ function renderAdminSales() {
 function renderSalesContractList(records) {
   const target = document.getElementById("salesContractList");
   if (!target) return;
-  const contracts = records.filter((record) => record.billing_type === "月額");
+  const contracts = records.filter((record) => record.billing_type === "継続");
   if (!contracts.length) {
     target.innerHTML = '<div class="empty-state">まだ契約データはありません。</div>';
     return;
@@ -2543,7 +2543,7 @@ function renderSalesContractList(records) {
           <strong>${escapeHtml(record.customer_name)}</strong>
         </header>
         <dl>
-          <div><dt>月額</dt><dd>${escapeHtml(formatYen(record.amount))}</dd></div>
+          <div><dt>金額</dt><dd>${escapeHtml(formatYen(record.amount))}</dd></div>
           <div><dt>状態</dt><dd>${escapeHtml(record.contract_status)}</dd></div>
           <div><dt>次回請求</dt><dd>${escapeHtml(formatShortDate(record.next_billing_at))}</dd></div>
           <div><dt>決済方法</dt><dd>${escapeHtml(record.payment_method)}</dd></div>
@@ -2712,9 +2712,9 @@ function ensureSalesDemoRecords() {
     {
       id: "sales-standard-demo",
       customer_name: "サンプル整体院",
-      plan_name: "スタンダード",
-      amount: 19800,
-      billing_type: "月額",
+      plan_name: "A4両面制作",
+      amount: 55000,
+      billing_type: "単発",
       contract_status: "契約中",
       status: "入金済み",
       payment_method: "カード決済",
@@ -2726,9 +2726,9 @@ function ensureSalesDemoRecords() {
     {
       id: "sales-light-demo",
       customer_name: "サンプル飲食店",
-      plan_name: "ライト",
-      amount: 9800,
-      billing_type: "月額",
+      plan_name: "A4片面制作",
+      amount: 33000,
+      billing_type: "単発",
       contract_status: "契約中",
       status: "未払い",
       payment_method: "カード決済待ち",
@@ -2740,9 +2740,9 @@ function ensureSalesDemoRecords() {
     {
       id: "sales-consulting-demo",
       customer_name: "サンプル工務店",
-      plan_name: "販促伴走プラン",
-      amount: 150000,
-      billing_type: "月額",
+      plan_name: "A4両面制作",
+      amount: 55000,
+      billing_type: "単発",
       contract_status: "契約中",
       status: "請求予定",
       payment_method: "請求書",
@@ -3122,7 +3122,7 @@ const CHAT_ROUTE_FIELDS = {
       name: "inquiry_detail",
       label: "相談したい内容",
       question:
-        "制作・料金について相談したい内容を教えてください。\n\n例：チラシを作りたい、料金を知りたい、見積もりがほしい、サブスクを相談したい、急ぎで制作したい、などです。"
+        "制作・料金について相談したい内容を教えてください。\n\n例：チラシを作りたい、料金を知りたい、見積もりがほしい、A4片面で相談したい、急ぎで制作したい、などです。"
     },
     {
       name: "production_item",
@@ -3141,7 +3141,7 @@ const CHAT_ROUTE_FIELDS = {
       label: "予算感",
       optional: true,
       question:
-        "差し支えなければ、予算感も教えてください。\n\n例：1万円以内、3万円前後、月額プランで相談したい、まだ分からない、などです。\n\nまだ分からない場合は「未定」で大丈夫です。"
+        "差し支えなければ、予算感も教えてください。\n\n例：33,000円前後、55,000円前後、内容を見て相談したい、まだ分からない、などです。\n\nまだ分からない場合は「未定」で大丈夫です。"
     },
     {
       name: "current_challenge",
@@ -3370,14 +3370,13 @@ function openChat() {
     state.data = createChatLeadData();
     addMessage(
       "bot",
-      "こんにちは。\n今のチラシや販促について、気になっていることを教えてください。\n\nたとえば、\n「チラシを配っても反応がない」\n「作り直す前に見てほしい」\n「制作料金を知りたい」\n「集客全体を相談したい」\nなど、まだ整理できていなくても大丈夫です。"
+      "こんにちは。\n今のチラシについて、気になっていることを教えてください。\n\nたとえば、\n「チラシを配っても反応がない」\n「作り直す前に見てほしい」\n「制作料金を知りたい」\nなど、まだ整理できていなくても大丈夫です。"
     );
     setActions([
       { label: "チラシを無料診断してほしい", kind: "route", route: "free_diagnosis", important: true },
       { label: "制作料金を知りたい", value: "制作料金を知りたい" },
       { label: "よくある質問を見る", kind: "faq_menu" },
       { label: "直接問い合わせる", kind: "link", href: "contact.html" },
-      { label: "販促全体を相談したい", value: "販促全体を相談したい" },
       { label: "まだよく分からない", value: "まだよく分からない" }
     ]);
   }
@@ -3427,7 +3426,6 @@ function getPostConcernActions(preferredRoute = "") {
   const actions = [
     { label: "チラシを無料診断してほしい", kind: "route", route: "free_diagnosis" },
     { label: "制作料金を相談したい", kind: "route", route: "production_inquiry" },
-    { label: "販促全体を相談したい", kind: "route", route: "promotion_consulting" },
     { label: "他の質問を見る", kind: "faq_menu" },
     { label: "直接問い合わせる", kind: "link", href: "contact.html" }
   ];
@@ -3448,10 +3446,7 @@ function getConcernGuidanceMessage(route) {
     return "ありがとうございます。\nチラシの反応が不安な場合、見出し・ターゲット・訴求・オファー・問い合わせ導線のどこかで止まっている可能性があります。\n\nここではまだ受付は開始していません。\n無料診断に進む場合は、下の「チラシを無料診断してほしい」を押してください。";
   }
   if (route === "production_inquiry") {
-    return "ありがとうございます。\n制作料金や納期を知りたい場合は、作りたいもの・希望時期・予算感を確認したうえで案内できます。\n\n問い合わせとして受付する場合は、下の「制作料金を相談したい」を押してください。";
-  }
-  if (route === "promotion_consulting") {
-    return "ありがとうございます。\nチラシだけでなく、SNS・LINE・LP・既存客向け案内なども含めて見たい場合は、販促全体の相談として整理できます。\n\n相談受付に進む場合は、下の「販促全体を相談したい」を押してください。";
+    return "ありがとうございます。\n制作料金や納期を知りたい場合は、作りたいチラシの種類や希望時期を確認したうえで案内できます。\n\n問い合わせとして受付する場合は、下の「制作料金を相談したい」を押してください。";
   }
   return "ご質問ありがとうございます。\nこの場で断定できない内容は、条件を確認してからのご案内になります。\n\n分かる範囲の質問はそのまま入力できます。確実に確認したい場合は、直接問い合わせをご利用ください。";
 }
@@ -3648,10 +3643,8 @@ function getProductionPricingMessage(continueToInquiry = true) {
     "料金の目安はこちらです。",
     "",
     "無料チラシ診断：0円",
-    "ライト：月2点まで 9,800円/月",
-    "スタンダード：月5点まで 19,800円/月",
-    "プレミアム：月8点まで 29,800円/月",
-    "販促伴走プラン：月150,000円〜",
+    "A4片面チラシ制作：33,000円",
+    "A4両面チラシ制作：55,000円",
     "",
     "共通で、チャット依頼・2〜3営業日納品・修正1回まで無料です。",
     "印刷費は別途です。",
@@ -3695,7 +3688,7 @@ function showRouteChoice() {
   setActions([
     { label: "今のチラシの改善点を無料で見てほしい", kind: "route", route: "free_diagnosis", important: true },
     { label: "チラシ制作や料金について知りたい", kind: "route", route: "production_inquiry" },
-    { label: "チラシ以外も含めて販促全体を相談したい", kind: "route", route: "promotion_consulting" }
+    { label: "直接問い合わせる", kind: "link", href: "contact.html" }
   ]);
 }
 
@@ -3732,7 +3725,7 @@ function getSupportResponse(text) {
   if (/診断だけ|見るだけ|依頼しなくても|契約しなくても/.test(text)) {
     return {
       message:
-        "大丈夫です。\n診断だけ利用して、自分で改善する形でも問題ありません。\n必要な方だけ、後から制作や販促相談を利用できます。"
+        "大丈夫です。\n診断だけ利用して、自分で改善する形でも問題ありません。\n必要な方だけ、後から反応設計型チラシ制作を相談できます。"
     };
   }
   if (/pdf|PDF/.test(text)) {
@@ -3820,7 +3813,7 @@ function askStage(stageName) {
 
 function repeatCurrentQuestion() {
   if (state.stage === "initial_concern") {
-    addMessage("bot", "まず、今のチラシや販促で気になっていることを自由に教えてください。");
+    addMessage("bot", "まず、今のチラシで気になっていることを自由に教えてください。");
     return;
   }
   const stage = getCurrentStage();
@@ -3956,12 +3949,13 @@ function restartChat() {
 const CHATBOT_V3_ROUTE_LABELS = {
   free_diagnosis: "無料チラシ診断",
   production_inquiry: "制作・料金問い合わせ",
-  promotion_consulting: "販促相談・伴走問い合わせ"
+  promotion_consulting: "その他問い合わせ"
 };
 
 const CHATBOT_V3_LABELS = {
   intake_type: "受付種別",
   initial_concern: "困っていること",
+  issue_text: "現在の悩み",
   flyer_file: "チラシ画像/PDF",
   industry: "業種",
   flyer_purpose: "チラシの目的",
@@ -4006,22 +4000,6 @@ const CHATBOT_V3_FIELDS = {
       action: { label: "チラシ画像/PDFを選択", kind: "file", important: true }
     },
     {
-      name: "industry",
-      label: "業種",
-      question:
-        "ありがとうございます。\n次に、業種を選んでください。\n近いものがなければ、自由に入力しても大丈夫です。",
-      choices: [
-        "整体院・整骨院",
-        "美容室・サロン",
-        "飲食店",
-        "リフォーム・工務店",
-        "士業",
-        "スクール・教室",
-        "求人募集",
-        "その他"
-      ]
-    },
-    {
       name: "flyer_purpose",
       label: "チラシの目的",
       question:
@@ -4037,201 +4015,17 @@ const CHATBOT_V3_FIELDS = {
       ]
     },
     {
-      name: "target_audience",
-      label: "主なターゲット",
+      name: "issue_text",
+      label: "現在の悩み",
       question:
-        "主に誰に向けたチラシなのか、近いものを選んでください。\n具体的に分かる場合は自由に入力できます。",
+        "今のチラシで、いちばん気になっていることを教えてください。",
       choices: [
-        "30〜50代女性",
-        "近隣の家族世帯",
-        "近隣の戸建て世帯",
-        "宴会の幹事",
-        "未経験の求職者",
-        "既存のお客様",
-        "まだ決まっていない"
-      ]
-    },
-    {
-      name: "distribution_method",
-      label: "配布方法",
-      question:
-        "このチラシは、どのように配布している、または配布する予定ですか？",
-      choices: [
-        "ポスティング",
-        "新聞折込",
-        "店頭配布",
-        "手渡し",
-        "DM・郵送",
-        "SNS・LINE掲載",
-        "既存客への案内",
-        "まだ配布していない"
-      ]
-    },
-    {
-      name: "distribution_area",
-      label: "配布地域",
-      optional: true,
-      question:
-        "配布する地域も教えてください。\n\n例：〇〇市、〇〇駅周辺、店舗から半径3km以内、〇〇区全域などです。"
-    },
-    {
-      name: "distribution_volume",
-      label: "配布枚数・配布予定日",
-      optional: true,
-      question:
-        "分かる範囲で、配布枚数や配布予定日も選んでください。\n具体的に分かる場合は自由に入力できます。",
-      choices: [
-        "まだ未定",
-        "これから配布予定",
-        "1,000枚前後",
-        "3,000枚前後",
-        "5,000枚以上",
-        "来月上旬",
-        "配布済み"
-      ]
-    },
-    {
-      name: "desired_response",
-      label: "増やしたい反応",
-      question:
-        "このチラシで一番増やしたい反応を選んでください。",
-      choices: [
-        "電話問い合わせ",
-        "LINE登録",
-        "Web予約",
-        "来店",
-        "資料請求",
-        "求人応募",
-        "商品購入",
-        "まだ決まっていない"
-      ]
-    },
-    {
-      name: "current_response_status",
-      label: "現在の反応状況",
-      question:
-        "今の反応状況も、分かる範囲で選んでください。",
-      choices: [
-        "まだ配布前",
-        "ほとんど反応なし",
-        "少し反応はある",
-        "反応はあるが成約しない",
-        "以前より反応が落ちた",
-        "反応数を把握していない"
-      ]
-    },
-    {
-      name: "service_price",
-      label: "商品・サービスの価格帯",
-      optional: true,
-      question:
-        "商品やサービスの価格帯も、分かる範囲で選んでください。",
-      choices: [
-        "5,000円未満",
-        "5,000〜1万円",
-        "1万〜3万円",
-        "3万円以上",
-        "見積もり制",
-        "求人なので給与条件",
-        "まだ未定"
-      ]
-    },
-    {
-      name: "strengths",
-      label: "自社の強み",
-      question:
-        "お店やサービスの強みを選んでください。\n具体的な強みがあれば自由に入力できます。",
-      choices: [
-        "地域密着",
-        "専門性",
-        "実績",
-        "丁寧な対応",
-        "価格",
-        "早さ",
-        "安心感",
-        "まだ整理できていない"
-      ]
-    },
-    {
-      name: "competitor_difference",
-      label: "競合との違い",
-      optional: true,
-      question:
-        "競合や近いサービスと比べた違いを選んでください。\n分からなければ「不明」で大丈夫です。",
-      choices: [
-        "価格が分かりやすい",
-        "専門性が高い",
-        "地域に強い",
-        "対応が丁寧",
-        "実績がある",
-        "スピードが早い",
-        "不明"
-      ]
-    },
-    {
-      name: "current_offer",
-      label: "現在のオファー・特典",
-      question:
-        "今のチラシに、特典や申し込み理由はありますか？",
-      choices: [
-        "初回無料",
-        "無料相談",
-        "割引",
-        "期間限定",
-        "先着枠",
-        "特になし",
-        "分からない"
-      ]
-    },
-    {
-      name: "contact_flow",
-      label: "問い合わせ導線",
-      question:
-        "問い合わせや申し込みは、どこから受ける想定ですか？",
-      choices: [
-        "電話",
-        "LINE",
-        "Webフォーム",
-        "QRコード",
-        "来店",
-        "メール",
-        "まだ決まっていない"
-      ]
-    },
-    {
-      name: "reference_url",
-      label: "参考URL・SNS",
-      optional: true,
-      question:
-        "ホームページやSNS、参考URLがあれば送ってください。\nない場合は「なし」で大丈夫です。"
-    },
-    {
-      name: "review_focus",
-      label: "特に見てほしいポイント",
-      question:
-        "診断で特に見てほしいところを選んでください。",
-      choices: [
-        "見出し",
-        "デザイン",
-        "文章",
-        "問い合わせ導線",
-        "特典・オファー",
-        "ターゲット",
-        "全体"
-      ]
-    },
-    {
-      name: "desired_improvement",
-      label: "希望する改善方向",
-      question:
-        "希望する改善方向があれば選んでください。",
-      choices: [
-        "もっと反応を増やしたい",
-        "信頼感を出したい",
-        "女性向けにしたい",
-        "求人応募を増やしたい",
-        "高級感を出したい",
-        "分かりやすくしたい",
+        "配っても反応がない",
+        "問い合わせが来ない",
+        "予約・来店につながらない",
+        "求人応募が来ない",
+        "配る前に見てほしい",
+        "何が悪いのか分からない",
         "まだ分からない"
       ]
     },
@@ -4270,7 +4064,8 @@ const CHATBOT_V3_FIELDS = {
         "チラシを作りたい",
         "料金を知りたい",
         "見積もりがほしい",
-        "サブスクを相談したい",
+        "A4片面で相談したい",
+        "A4両面で相談したい",
         "急ぎで制作したい",
         "何を作るべきか相談したい"
       ]
@@ -4311,9 +4106,8 @@ const CHATBOT_V3_FIELDS = {
       question:
         "差し支えなければ、予算感も選んでください。\nまだ分からない場合は「未定」で大丈夫です。",
       choices: [
-        "1万円以内",
-        "3万円前後",
-        "月額プランで相談したい",
+        "33,000円前後",
+        "55,000円前後",
         "内容を見て相談したい",
         "未定"
       ]
@@ -4429,22 +4223,8 @@ const CHATBOT_V3_SUMMARY_FIELDS = {
     "intake_type",
     "initial_concern",
     "flyer_file",
-    "industry",
     "flyer_purpose",
-    "target_audience",
-    "distribution_method",
-    "distribution_area",
-    "distribution_volume",
-    "desired_response",
-    "current_response_status",
-    "service_price",
-    "strengths",
-    "competitor_difference",
-    "current_offer",
-    "contact_flow",
-    "reference_url",
-    "review_focus",
-    "desired_improvement",
+    "issue_text",
     "company_name",
     "customer_name",
     "email",
@@ -4524,14 +4304,13 @@ function openChat() {
     logChatEvent("chat_started", { stage: "initial_concern" });
     addMessage(
       "bot",
-      "こんにちは。\n今のチラシや販促について、気になっていることを教えてください。\n\nたとえば、\n「チラシを配っても反応がない」\n「作り直す前に見てほしい」\n「制作料金を知りたい」\n「集客全体を相談したい」\nなど、まだ整理できていなくても大丈夫です。"
+      "こんにちは。\n今のチラシについて、気になっていることを教えてください。\n\nたとえば、\n「チラシを配っても反応がない」\n「作り直す前に見てほしい」\n「制作料金を知りたい」\nなど、まだ整理できていなくても大丈夫です。"
     );
     setActions([
       { label: "チラシを無料診断してほしい", kind: "route", route: "free_diagnosis", important: true },
       { label: "制作料金を知りたい", value: "制作料金を知りたい" },
       { label: "よくある質問を見る", kind: "faq_menu" },
       { label: "直接問い合わせる", kind: "link", href: "contact.html" },
-      { label: "販促全体を相談したい", value: "販促全体を相談したい" },
       { label: "まだよく分からない", value: "まだよく分からない" }
     ]);
   }
@@ -4815,11 +4594,8 @@ function handleText(rawText) {
 
 function detectChatRoute(text) {
   const value = text.toLowerCase();
-  if (/料金|値段|金額|費用|価格|代金|いくら|月いくら|料金表|見積|見積もり|サブスク|月額|納期|何日|何営業日|どのくらい|どれくらい|いつでき|いつまで|急ぎ|作って|制作|依頼|デザイン|プラン/.test(value)) {
+  if (/料金|値段|金額|費用|価格|代金|いくら|料金表|見積|見積もり|納期|何日|何営業日|どのくらい|どれくらい|いつでき|いつまで|急ぎ|作って|制作|依頼|デザイン|プラン|片面|両面/.test(value)) {
     return "production_inquiry";
-  }
-  if (/伴走|販促全体|集客全体|販促相談|line|sns|instagram|インスタ|lp|ホームページ|毎月|仕組み|売上|導線|チラシ以外|何から改善/.test(value)) {
-    return "promotion_consulting";
   }
   if (/反応がない|反応|問い合わせがない|問い合わせが来ない|予約が入らない|来店につながらない|応募が来ない|求人|何が悪|配布前|見てほしい|診断|改善点|canva|不安|作り直す前|無料診断/.test(value)) {
     return "free_diagnosis";
@@ -4832,17 +4608,15 @@ function getChatbotPricingMessage(continueToInquiry = true) {
     "料金の目安はこちらです。",
     "",
     "無料チラシ診断：0円",
-    "ライト：月2点まで 9,800円/月",
-    "スタンダード：月5点まで 19,800円/月",
-    "プレミアム：月8点まで 29,800円/月",
-    "販促伴走プラン：月150,000円〜",
+    "A4片面チラシ制作：33,000円",
+    "A4両面チラシ制作：55,000円",
     "",
-    "共通で、チャット依頼・2〜3営業日納品・修正1回まで無料です。",
-    "印刷費は別途です。",
+    "料金には、7つの視点による事前診断、ターゲット・強みの整理、キャッチコピー作成、紙面構成、デザイン制作、問い合わせ導線設計、修正2回、印刷用PDF納品を含みます。",
+    "印刷費、写真撮影、ロゴ制作、編集可能な元データは別料金です。",
     "",
     continueToInquiry
-      ? "内容や点数によって合うプランが変わるので、このまま制作・料金問い合わせとして受付します。"
-      : "内容や点数によって合うプランが変わります。詳しく確認したい場合は、制作・料金問い合わせに進めます。"
+      ? "制作を希望する場合は、このまま制作・料金問い合わせとして受付できます。"
+      : "詳しく確認したい場合は、制作・料金問い合わせに進めます。"
   ].join("\n");
 }
 
@@ -4860,14 +4634,14 @@ function startChatRoute(route, options = {}) {
     if (route === "free_diagnosis") {
       addMessage(
         "bot",
-        "なるほど。\n今のチラシで反応や問い合わせにつながっているか不安ですね。\n\nその場合は、まず無料チラシ診断で、見出し・ターゲット・訴求・オファー・問い合わせ導線などを確認できます。\n診断だけでも無料で利用できるので、まずは今のチラシ画像またはPDFを送ってください。"
+        "なるほど。\n今のチラシで反応や問い合わせにつながっているか不安ですね。\n\n無料診断では、7つの専門視点で反応を妨げている原因や改善ポイントを確認します。\n診断だけでも無料で利用できるので、まずは今のチラシ画像またはPDFを送ってください。"
       );
     } else if (route === "production_inquiry") {
       addMessage("bot", getChatbotPricingMessage());
     } else {
       addMessage(
         "bot",
-        "なるほど。\nチラシ単体というより、集客や販促全体の流れを相談したいですね。\n販促相談・伴走問い合わせとして受付できます。"
+        "ありがとうございます。\nチラシ以外を含む内容は、条件によって案内が変わります。\nこのチャットで断定せず、直接問い合わせで確認してください。"
       );
     }
   }
@@ -4882,7 +4656,6 @@ function showRouteChoice() {
   setActions([
     { label: "今のチラシの改善点を無料で見てほしい", kind: "route", route: "free_diagnosis", important: true },
     { label: "チラシ制作や料金について知りたい", kind: "route", route: "production_inquiry" },
-    { label: "チラシ以外も含めて販促全体を相談したい", kind: "route", route: "promotion_consulting" },
     { label: "よくある質問を見る", kind: "faq_menu" },
     { label: "直接問い合わせる", kind: "link", href: "contact.html" }
   ]);
@@ -4905,7 +4678,7 @@ function getSupportResponse(text, options = {}) {
   if (/営業|売り込|しつこ|勧誘|電話.*来る/.test(text)) {
     return {
       message:
-        "無理な営業は行いません。\n無料診断後、必要な方にだけ制作プランや販促相談をご案内します。\nまずは改善ポイントを知る目的だけでも大丈夫です。"
+        "無理な営業は行いません。\n無料診断後、必要な方にだけ反応設計型チラシ制作をご案内します。\nまずは改善ポイントを知る目的だけでも大丈夫です。"
     };
   }
   if (/AI|ＡＩ|人工知能|自動診断|自動で診断|担当者|人が見る|人.*確認/.test(text)) {
@@ -4945,7 +4718,7 @@ function getSupportResponse(text, options = {}) {
         "チラシがまだない場合も相談できます。\nその場合は無料診断というより、新しく作る前提で目的・ターゲット・載せたい内容を整理する形になります。",
       actions: allowRoute ? [
         { label: "制作・料金について相談したい", kind: "route", route: "production_inquiry", important: true },
-        { label: "販促全体を相談したい", kind: "route", route: "promotion_consulting" }
+        { label: "直接問い合わせる", kind: "link", href: "contact.html" }
       ] : null
     };
   }
@@ -4970,7 +4743,7 @@ function getSupportResponse(text, options = {}) {
   if (/何日|何営業日|どのくらい|どれくらい|いつでき|いつまで|いつ返|返ってくる|戻ってくる|いつ届|届く|納期|日数|期間/.test(text)) {
     return {
       message:
-        "目安として、無料チラシ診断レポートは通常1〜3営業日以内にメールでお送りします。\n\n制作を依頼する場合は、内容がそろってから2〜3営業日での納品が基本です。\n急ぎの場合は、内容と希望日を確認して対応できるかご案内します。",
+        "目安として、無料チラシ診断レポートは通常1〜3営業日以内にメールでお送りします。\n\n制作を依頼する場合の納期は、内容や素材の揃い具合によって変わるため、希望日を確認してご案内します。",
       actions: allowRoute ? [
         { label: "無料診断に進む", kind: "route", route: "free_diagnosis", important: true },
         { label: "制作納期を相談したい", kind: "route", route: "production_inquiry" }
@@ -4987,7 +4760,7 @@ function getSupportResponse(text, options = {}) {
   if (/支払|決済|クレジット|カード|請求|前払い|振込/.test(text)) {
     return {
       message:
-        "サブスクプランの月額料金はクレジットカード前払いが基本です。\n銀行振込など個別の支払い方法については、このチャットでは断定できないため、直接お問い合わせください。",
+        "支払い方法は、正式に制作を依頼する段階でご案内します。\n銀行振込、カード決済、請求書対応などの可否は条件確認が必要なため、直接お問い合わせください。",
       actions: allowRoute ? [
         { label: "直接問い合わせる", kind: "link", href: "contact.html" },
         { label: "制作・料金について問い合わせたい", kind: "route", route: "production_inquiry" }
@@ -4997,47 +4770,47 @@ function getSupportResponse(text, options = {}) {
   if (/高い|安い|割引|値引|安く/.test(text)) {
     return {
       message:
-        "料金はライト月9,800円、スタンダード月19,800円、プレミアム月29,800円が目安です。\n予算に合うかは、作りたい点数や内容で変わります。個別の値引き可否はこの場では断定できません。"
+        "反応設計型チラシ制作は、A4片面33,000円、A4両面55,000円が目安です。\n個別の値引き可否はこの場では断定できないため、条件を確認してご案内します。"
     };
   }
   if (/印刷|プリント|入稿/.test(text)) {
     return {
       message:
-        "基本はデザインデータ納品です。\n印刷が必要な場合は、仕様や枚数を確認したうえで別途ご相談できます。印刷費は月額料金とは別になります。"
+        "基本は印刷用PDF納品です。\n印刷費、写真撮影、ロゴ制作、編集可能な元データは別料金です。印刷まで必要な場合は、仕様や枚数を確認してご案内します。"
     };
   }
   if (/修正|直し|変更|再修正/.test(text)) {
     return {
       message:
-        "制作物の修正は、各制作物につき1回まで無料で対応します。\n大きく内容を作り替える場合や追加修正は、内容を確認してご案内します。"
+        "反応設計型チラシ制作では、修正2回まで含みます。\n大きく内容を作り替える場合や追加修正は、内容を確認してご案内します。"
     };
   }
   if (/打ち合わせ|ミーティング|zoom|Zoom|電話相談|オンライン/.test(text)) {
     return {
       message:
-        "制作サブスクは基本的にチャット対応です。\n定期ミーティングや販促全体の相談が必要な場合は、販促伴走プランとしてご相談できます。",
+        "無料診断は、送ってもらったチラシ画像/PDFと入力内容をもとに確認します。\n打ち合わせが必要な制作相談は、内容によって対応可否が変わるため直接お問い合わせください。",
       actions: allowRoute ? [
-        { label: "販促全体を相談したい", kind: "route", route: "promotion_consulting", important: true },
-        { label: "制作・料金について相談したい", kind: "route", route: "production_inquiry" }
+        { label: "制作・料金について相談したい", kind: "route", route: "production_inquiry", important: true },
+        { label: "直接問い合わせる", kind: "link", href: "contact.html" }
       ] : null
     };
   }
   if (/会社名なし|店舗名なし|屋号なし|匿名|名前.*出したくない|店名.*出したくない|個人.*(大丈夫|可能|でも|ですか)|個人事業主.*(大丈夫|可能|でも|ですか)/.test(text)) {
     return {
       message:
-        "会社名・店舗名は任意です。\nただし、無料診断・制作問い合わせ・販促相談では、受付後に連絡できるように、お名前・メールアドレス・電話番号を確認しています。掲載名を出したくない場合は、その旨を入力してください。"
+        "会社名・店舗名は任意です。\n無料診断では、お名前・メールアドレス・チラシ画像・チラシの目的・現在の悩みを確認します。掲載名を出したくない場合は、その旨を入力してください。"
     };
   }
   if (/電話番号|電話.*必要|電話なし|メールだけ/.test(text)) {
     if (state.intakeType === "free_diagnosis" || !state.intakeType) {
       return {
         message:
-          "無料診断・制作問い合わせ・販促相談では、受付後に連絡できるように電話番号も確認しています。\n営業電話を前提にしたものではありません。診断内容や見積もり内容の確認が必要な場合にだけ使用します。"
+        "無料診断では、受付後に確実に連絡できるように電話番号も確認しています。\n営業電話を前提にしたものではなく、診断内容の確認が必要な場合にだけ使用します。"
       };
     }
     return {
       message:
-        "制作・料金問い合わせや販促相談でも、受付後に連絡できるように電話番号を確認しています。\n営業電話を前提にしたものではなく、内容確認が必要な場合にだけ使用します。"
+        "制作・料金問い合わせでは、内容確認のため電話番号をお願いする場合があります。\nメールだけを希望する場合は、その旨を入力してください。"
     };
   }
   if (/求人|採用|スタッフ募集|人材募集|アルバイト|パート/.test(text)) {
@@ -5053,10 +4826,10 @@ function getSupportResponse(text, options = {}) {
   if (/line|LINE|sns|SNS|Instagram|instagram|インスタ|投稿画像|告知画像|バナー|画像だけ/.test(text)) {
     return {
       message:
-        "LINE配信用画像、SNS告知画像、キャンペーン画像なども相談できます。\nチラシ以外も含めて見たい場合は、制作・料金問い合わせか販促相談として受付できます。",
+        "LINE配信用画像、SNS告知画像、キャンペーン画像などは、個別内容によって対応可否や料金が変わります。\nこのLPではまずA4チラシ制作を中心に案内しています。必要な場合は直接お問い合わせください。",
       actions: allowRoute ? [
-        { label: "制作・料金について相談したい", kind: "route", route: "production_inquiry", important: true },
-        { label: "販促全体を相談したい", kind: "route", route: "promotion_consulting" }
+        { label: "直接問い合わせる", kind: "link", href: "contact.html", important: true },
+        { label: "制作・料金について相談したい", kind: "route", route: "production_inquiry" }
       ] : null
     };
   }
@@ -5073,14 +4846,17 @@ function getSupportResponse(text, options = {}) {
   if (/対応.*(業種|業界)|どんな.*(業種|店|会社)|制作できる|何が作れ|作れるもの|チラシ以外/.test(text)) {
     return {
       message:
-        "地域のお店・中小企業向けの販促物に対応しています。\nチラシ、求人チラシ、キャンペーン告知、店頭POP、SNS告知画像、イベント案内、商品紹介、サービス案内などを相談できます。"
+        "地域のお店・中小企業向けのチラシに対応しています。\n通常のチラシ、求人チラシ、キャンペーン告知、商品紹介、サービス案内など、まずはA4チラシを中心に相談できます。"
     };
   }
   if (/チラシ以外|line|sns|instagram|インスタ|ホームページ|lp|販促全体|集客全体/.test(text)) {
     return {
       message:
-        "チラシ以外も相談できます。\nLINE、SNS、LP、既存客向け案内なども含めて相談したい場合は、販促相談・伴走問い合わせとして受付できます。",
-      route: allowRoute ? "promotion_consulting" : ""
+        "このLPでは、まず無料チラシ診断とA4チラシ制作を中心に案内しています。\nチラシ以外の内容は条件確認が必要なため、直接お問い合わせください。",
+      actions: allowRoute ? [
+        { label: "直接問い合わせる", kind: "link", href: "contact.html", important: true },
+        { label: "制作・料金について相談したい", kind: "route", route: "production_inquiry" }
+      ] : null
     };
   }
   if (/料金|値段|金額|費用|価格|代金|いくら|月いくら|料金表|プラン|サブスク|月額/.test(text)) {
@@ -5115,7 +4891,7 @@ function addProgress(stageName) {
     if (stage) addMessage("progress", `任意項目：${stage.label}`);
     return;
   }
-  addMessage("progress", `受付ステップ ${index + 1}/${fields.length}：${fields[index].label}`);
+  addMessage("progress", `受付項目：${fields[index].label}`);
 }
 
 function askNextMissing() {
@@ -5148,7 +4924,7 @@ function askStage(stageName, options = {}) {
 function repeatCurrentQuestion() {
   const stage = getCurrentStage();
   if (!stage) {
-    addMessage("bot", "まず、今のチラシや販促で気になっていることを教えてください。");
+    addMessage("bot", "まず、今のチラシで気になっていることを教えてください。");
     return;
   }
   addMessage("bot", `受付を続けます。\n\n${stage.question}`);
@@ -5180,7 +4956,7 @@ function showConsentStep() {
   state.stage = "consent";
   addMessage(
     "bot",
-    "最後に確認です。\n入力内容は、受付対応・診断レポート作成・制作や販促相談の案内に使用します。\n同意して進む場合は「同意して確認へ進む」を押してください。"
+    "最後に確認です。\n入力内容は、受付対応・診断レポート作成・必要な制作案内のために使用します。\n同意して進む場合は「同意して確認へ進む」を押してください。"
   );
   setActions([
     { label: "同意して確認へ進む", kind: "confirm_preview", important: true },
@@ -5313,7 +5089,7 @@ async function completeApplication() {
   } else {
     addMessage(
       "bot",
-      "ありがとうございます。\n販促相談・伴走問い合わせの受付が完了しました。\n\n入力内容を確認のうえ、販促課題や相談内容に合わせて案内します。\n\nチラシ、LINE、SNS、LP、既存客向けの案内など、必要な範囲を整理しながら進められます。"
+      "ありがとうございます。\nお問い合わせの受付が完了しました。\n\n入力内容を確認のうえ、メールでご案内します。"
     );
   }
   setActions([
@@ -5356,11 +5132,18 @@ function validateChatLead(data) {
       message: "メールアドレスの形式が少し違うようです。\n診断レポートや案内を届けるため、もう一度確認して入力してください。"
     };
   }
-  if (!isValidPhone(data.phone)) {
+  if (state.intakeType !== "free_diagnosis" && !isValidPhone(data.phone)) {
     return {
       valid: false,
       field: "phone",
       message: "受付後に連絡できる電話番号が必要です。\n内容確認が必要な場合にだけ使用しますので、連絡可能な番号を入力してください。"
+    };
+  }
+  if (state.intakeType === "free_diagnosis" && data.phone && !/^(なし|無し|ない|無い|メールのみ|不要)$/i.test(String(data.phone).trim()) && !isValidPhone(data.phone)) {
+    return {
+      valid: false,
+      field: "phone",
+      message: "電話番号の形式が少し違うようです。\n任意項目なので、不要な場合は「なし」と入力してください。"
     };
   }
   if (state.intakeType === "free_diagnosis" && !data.flyer_file) {

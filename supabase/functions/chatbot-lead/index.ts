@@ -152,15 +152,16 @@ function validateDiagnosisPayload(payload: Record<string, unknown>, flyerFile: F
   const requiredFields = [
     ["contactName", "お名前"],
     ["email", "メールアドレス"],
-    ["phone", "電話番号"]
+    ["flyerPurpose", "チラシの目的"]
   ];
   const missing = requiredFields
     .filter(([key]) => !hasText(payload[key]))
     .map(([, label]) => label);
 
   if (!hasDiagnosisFile(flyerFile)) missing.unshift("チラシ画像/PDF");
+  if (!hasText(payload.issueText) && !hasText(payload.initialConcern)) missing.push("現在の悩み");
   if (hasText(payload.email) && !isValidEmail(payload.email)) missing.push("有効なメールアドレス");
-  if (hasText(payload.phone) && !isValidPhone(payload.phone)) missing.push("有効な電話番号");
+  if (hasText(payload.phone) && !isNoPhoneText(payload.phone) && !isValidPhone(payload.phone)) missing.push("有効な電話番号");
   if (!hasConsent(payload.consent)) missing.push("同意確認");
 
   const uniqueMissing = [...new Set(missing)];
@@ -253,6 +254,10 @@ function isValidPhone(value: unknown) {
   return normalized.replace(/\D/g, "").length >= 10;
 }
 
+function isNoPhoneText(value: unknown) {
+  return /^(なし|無し|ない|無い|メールのみ|不要)$/i.test(String(value || "").trim());
+}
+
 function hasConsent(value: unknown) {
   return value === true || String(value).toLowerCase() === "true" || String(value) === "同意済み";
 }
@@ -265,12 +270,8 @@ function buildDiagnosisNotice(row: Record<string, unknown>) {
     `■ メールアドレス\n${row.email || "-"}`,
     `■ 電話番号\n${row.phone || "-"}`,
     `■ 会社名・店舗名\n${row.company_name || "-"}`,
-    `■ 業種\n${row.industry || "-"}`,
     `■ チラシの目的\n${row.flyer_purpose || "-"}`,
-    `■ 増やしたい反応\n${row.desired_response || "-"}`,
-    `■ 現在の反応状況\n${row.current_response_status || "-"}`,
-    `■ 特に見てほしいポイント\n${row.review_focus || "-"}`,
-    `■ 希望する改善方向\n${row.desired_improvement || "-"}`,
+    `■ 現在の悩み\n${row.issue_text || row.initial_concern || "-"}`,
     `■ チラシファイル\n${row.flyer_file_name || "未添付"}`,
     `■ Storage Path\n${row.flyer_file_path || "-"}`
   ].join("\n\n");
