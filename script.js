@@ -4577,6 +4577,18 @@ function handleText(rawText) {
     return;
   }
 
+  if (currentStage.optional && /^(未入力|入力しないで進む|なし|無し|ない|無い|不要)$/i.test(text.trim())) {
+    state.data[currentStage.name] = "未入力";
+    if (state.editingField) {
+      state.editingField = "";
+      addMessage("bot", "修正しました。確認画面に戻ります。");
+      showConfirmation();
+      return;
+    }
+    askNextMissing();
+    return;
+  }
+
   if (!isChoiceAnswer && !forceFieldAnswer && treatAsQuestion) {
     addMessage(
       "bot",
@@ -4917,7 +4929,7 @@ function addProgress(stageName) {
 }
 
 function askNextMissing() {
-  const fields = getRequiredFields();
+  const fields = getCurrentFields();
   const next = fields.find((field) => !state.data[field.name]);
   if (next) {
     askStage(next.name);
@@ -5010,7 +5022,7 @@ function addSummaryMessage() {
   summary.className = "summary-box";
   getSummaryFields(route).forEach((key) => {
     const field = getCurrentFields().find((item) => item.name === key);
-    if (field?.optional && !state.data[key]) return;
+    if (field?.optional && (!state.data[key] || state.data[key] === "未入力")) return;
     const row = document.createElement("div");
     const dt = document.createElement("dt");
     const dd = document.createElement("dd");
@@ -5033,7 +5045,7 @@ function showEditFieldChoice() {
     .filter((key) => !["intake_type", "created_at", "consent", "initial_concern"].includes(key))
     .filter((key) => {
       const field = getCurrentFields().find((item) => item.name === key);
-      return !field?.optional || state.data[key];
+      return !field?.optional || (state.data[key] && state.data[key] !== "未入力");
     })
     .map((key) => ({
       label: CHATBOT_V3_LABELS[key] || key,
@@ -5202,6 +5214,7 @@ function validateChatLead(data) {
 }
 
 function buildChatLeadPayload(data) {
+  const optionalValue = (value) => (value === "未入力" ? "" : value || "");
   return {
     intakeType: state.intakeType || null,
     initialConcern: data.initial_concern || "",
@@ -5234,10 +5247,10 @@ function buildChatLeadPayload(data) {
     currentPromotionMethods: data.promotion_channels || "",
     consultationScope: data.consulting_scope || "",
     goal: data.goal || "",
-    companyName: data.company_name || "",
+    companyName: optionalValue(data.company_name),
     contactName: data.customer_name || "",
     email: data.email || "",
-    phone: data.phone || "",
+    phone: optionalValue(data.phone),
     consent: Boolean(data.consent),
     createdAt: data.created_at || new Date().toISOString()
   };

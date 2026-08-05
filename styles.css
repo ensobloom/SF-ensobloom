@@ -12389,16 +12389,6 @@ a {
   }
 }
 
-/* Final page-specific layout precedence. */
-.worry-section,
-.cause-section,
-.service-info,
-.difference-section,
-.sample-section,
-.deliverables-section {
-  display: none !important;
-}
-
 .flow-section .flow-list {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
