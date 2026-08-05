@@ -38,6 +38,283 @@ body {
   letter-spacing: 0;
 }
 
+/* Free diagnosis LP: keep the existing visual language while concentrating the page on the diagnosis offer. */
+.operator-note {
+  margin: 14px 0 0;
+  color: var(--deep-2);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+.worry-section,
+.cause-section,
+.service-info,
+.difference-section,
+.sample-section,
+.deliverables-section {
+  display: none;
+}
+
+.streamlined-problems {
+  padding: 88px 0;
+  background: linear-gradient(180deg, rgba(255, 246, 248, 0.88), rgba(255, 253, 252, 0.92));
+}
+
+.streamlined-problems .section-heading {
+  max-width: 760px;
+  margin: 0 auto 32px;
+  text-align: center;
+}
+
+.streamlined-problems h2 em {
+  color: var(--accent);
+  font-style: normal;
+}
+
+.streamlined-card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.streamlined-card-grid article {
+  min-width: 0;
+  padding: 22px 18px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+
+.streamlined-card-grid span {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.streamlined-card-grid h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.streamlined-card-grid p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.75;
+}
+
+.flow-list > li:nth-child(n + 4) {
+  display: none;
+}
+
+.flow-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pricing-panel .pricing-note,
+.pricing-panel .pricing-hero-art {
+  display: none;
+}
+
+.pricing-panel .included-row {
+  margin-top: 22px;
+}
+
+.owner-section {
+  padding: 88px 0;
+}
+
+.owner-card {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 38px;
+  align-items: start;
+  padding: 42px;
+  background: linear-gradient(135deg, #fff 0%, #fff6f8 100%);
+  border: 1px solid rgba(217, 67, 88, 0.22);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+
+.owner-card h2 {
+  margin: 0;
+  font-size: clamp(1.55rem, 3vw, 2.25rem);
+  line-height: 1.55;
+}
+
+.owner-card > p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 2;
+}
+
+@media (max-width: 680px) {
+  .operator-note {
+    font-size: 0.82rem;
+  }
+
+  .streamlined-problems,
+  .owner-section {
+    padding: 58px 0;
+  }
+
+  .streamlined-card-grid,
+  .flow-list,
+  .owner-card {
+    grid-template-columns: 1fr;
+  }
+
+  .streamlined-card-grid {
+    gap: 10px;
+  }
+
+  .streamlined-card-grid article {
+    padding: 18px;
+  }
+
+  .owner-card {
+    gap: 20px;
+    padding: 28px 22px;
+  }
+}
+
+/* 2026-08 LP restructuring overrides */
+.streamlined-problems {
+  display: block;
+}
+
+.flow-section .flow-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.production-flow-list,
+.partner-flow-list {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+.production-flow-list > li:nth-child(n + 4),
+.partner-flow-list > li:nth-child(n + 4) {
+  display: flex;
+}
+
+.production-work-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.production-work-grid article {
+  overflow: hidden;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+
+.production-work-grid img {
+  width: 100%;
+  aspect-ratio: 0.72;
+  object-fit: cover;
+  object-position: top;
+  border: 1px solid rgba(56, 47, 52, 0.08);
+}
+
+.production-work-grid h3 {
+  margin: 16px 0 6px;
+  font-size: 1.04rem;
+}
+
+.production-work-grid p,
+.production-price-note,
+.partner-note,
+.partner-promise p {
+  color: var(--muted);
+  font-size: 0.94rem;
+}
+
+.production-price-note,
+.partner-note {
+  max-width: 800px;
+  margin: 22px auto 0;
+  padding: 16px 20px;
+  background: rgba(255, 246, 248, 0.72);
+  border-left: 3px solid var(--accent);
+}
+
+.production-deliverables {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.production-deliverables li {
+  padding: 9px 14px;
+  color: var(--deep-2);
+  font-size: 0.92rem;
+  font-weight: 800;
+  background: #fff;
+  border: 1px solid rgba(106, 168, 132, 0.35);
+  border-radius: 999px;
+}
+
+.partner-promise {
+  text-align: center;
+}
+
+.partner-promise .section-inner {
+  max-width: 760px;
+}
+
+.partner-promise h2 {
+  margin: 0 0 16px;
+  font-size: clamp(1.7rem, 3vw, 2.4rem);
+  line-height: 1.55;
+}
+
+@media (max-width: 680px) {
+  .flow-section .flow-list,
+  .production-flow-list,
+  .partner-flow-list,
+  .production-work-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .production-work-grid {
+    gap: 14px;
+  }
+
+  .production-work-grid article {
+    display: grid;
+    grid-template-columns: 112px 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+
+  .production-work-grid img {
+    aspect-ratio: 0.72;
+  }
+
+  .production-work-grid h3,
+  .production-work-grid p {
+    grid-column: 2;
+    margin: 0;
+  }
+
+  .production-work-grid h3 {
+    margin-top: 6px;
+  }
+}
+
 img {
   display: block;
   max-width: 100%;
@@ -12110,4 +12387,163 @@ a {
     grid-template-columns: 1fr;
     gap: 2px;
   }
+}
+
+/* Final page-specific layout precedence. */
+.worry-section,
+.cause-section,
+.service-info,
+.difference-section,
+.sample-section,
+.deliverables-section {
+  display: none !important;
+}
+
+.flow-section .flow-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.flow-section .flow-list > li:nth-child(n + 4) {
+  display: none;
+}
+
+/* Keep the short diagnosis flow consistent from the hero through the body. */
+.hero-flow-card ol {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.hero-flow-card li:nth-child(n + 4) {
+  display: none;
+}
+
+/* This sentence is intentionally a single desktop headline. */
+.streamlined-problems .section-heading {
+  max-width: 920px;
+}
+
+.streamlined-problems .section-heading h2 {
+  font-size: clamp(1.9rem, 2.45vw, 2.15rem);
+}
+
+.footer-inner > small {
+  white-space: nowrap;
+}
+
+/* Keep the floating entry point clear without covering too much copy. */
+@media (min-width: 681px) and (max-width: 1400px) {
+  .chat-launcher {
+    width: 154px;
+  }
+
+  .chat-launcher-text strong {
+    overflow: visible;
+    text-overflow: clip;
+  }
+}
+
+.production-flow-list,
+.partner-flow-list {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+.production-flow-list > li:nth-child(n + 4),
+.partner-flow-list > li:nth-child(n + 4) {
+  display: flex !important;
+}
+
+@media (max-width: 680px) {
+  .flow-section .flow-list,
+  .production-flow-list,
+  .partner-flow-list,
+  .production-work-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .streamlined-problems .section-heading {
+    max-width: 100%;
+  }
+
+  .streamlined-problems .section-heading h2 {
+    font-size: clamp(1.72rem, 7vw, 2rem);
+  }
+
+  .pricing-panel .included-row span {
+    align-items: flex-start;
+    min-width: 0;
+    white-space: normal;
+    line-height: 1.65;
+  }
+
+  .chat-launcher {
+    width: 158px;
+    padding: 0 12px;
+  }
+
+  .chat-launcher-text small {
+    display: none;
+  }
+
+  .chat-launcher-text strong {
+    overflow: visible;
+    text-overflow: clip;
+    font-size: 0.78rem;
+  }
+}
+
+/* Final FAQ balance: the icon is a supporting cue, not the main visual. */
+.faq-hero {
+  grid-template-columns: 124px minmax(0, 1fr);
+  gap: 22px;
+  min-height: 258px;
+  padding: 38px 48px 38px 34px;
+}
+
+.faq-hero-mark {
+  width: 108px;
+  height: 112px;
+}
+
+.faq-hero::before {
+  display: none;
+}
+
+.faq-hero::after {
+  right: 28px;
+  bottom: 26px;
+  width: 72px;
+  height: 72px;
+  opacity: 0.68;
+}
+
+@media (max-width: 680px) {
+  .faq-hero {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    min-height: 0;
+    padding: 26px 18px 28px;
+  }
+
+  .faq-hero-mark {
+    width: 82px;
+    height: 86px;
+    margin-inline: auto;
+  }
+
+  .faq-hero::after {
+    right: 16px;
+    bottom: 16px;
+    width: 48px;
+    height: 48px;
+  }
+}
+
+/* Keep keyboard navigation visible across the public pages. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 3px solid #0b7d68;
+  outline-offset: 3px;
 }

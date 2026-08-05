@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/png" href="assets/logo-mark.png" />
-    <link rel="stylesheet" href="styles.css?v=20260805-two-step1" />
+    <link rel="stylesheet" href="styles.css?v=20260806-publish1" />
   </head>
   <body>
     <header class="site-header" aria-label="サイトヘッダー">
@@ -24,15 +24,14 @@
         </span>
       </a>
       <nav class="site-nav" aria-label="主要ナビゲーション">
-        <a href="#diagnosis">診断サンプル</a>
+        <a href="#diagnosis">診断内容</a>
         <a href="#sages">7つの視点</a>
-        <a href="#works">制作実績</a>
+        <a href="#works">制作事例</a>
         <a href="#pricing">制作料金</a>
-        <a href="contact.html">問い合わせ</a>
-        <a href="portal.html">制作依頼ログイン</a>
         <a href="#faq">FAQ</a>
+        <a href="contact.html">お問い合わせ</a>
       </nav>
-      <button class="header-cta js-open-chat" type="button">無料で診断する</button>
+      <button class="header-cta js-open-chat" type="button" data-chat-route="free_diagnosis">今のチラシを送って無料診断する</button>
     </header>
 
     <main id="top">
@@ -53,6 +52,7 @@
               問い合わせや予約につながる改善ポイントを
               <strong>A4レポート</strong>でお届けします。
             </p>
+            <p class="operator-note">株式会社En-So Bloom運営｜完全自動ではなく、代表の仁谷亮太が内容を確認します。</p>
             <ul class="hero-proof" aria-label="無料診断の安心材料">
               <li>
                 <span class="proof-icon" aria-hidden="true">
@@ -98,8 +98,8 @@
               </li>
             </ul>
             <div class="hero-actions">
-              <button class="primary-button js-open-chat" type="button">チラシを無料診断してもらう</button>
-              <a class="secondary-button" href="#diagnosis">A4レポート見本を見る</a>
+              <button class="primary-button js-open-chat" type="button" data-chat-route="free_diagnosis">今のチラシを送って無料診断する</button>
+              <a class="secondary-button" href="#diagnosis">診断レポート見本を見る</a>
             </div>
             <a class="direct-contact-link" href="contact.html">直接問い合わせる</a>
           </div>
@@ -166,58 +166,19 @@
         </div>
       </section>
 
-      <section class="signal-strip" aria-label="無料診断で見るポイント">
-        <div class="section-inner signal-inner">
-          <p class="signal-title">
-            <span class="signal-title-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" focusable="false">
-                <path d="M4 10v4a2 2 0 0 0 2 2h2l3 4v-4h1l7 3V5l-7 3H6a2 2 0 0 0-2 2Z" />
-                <path d="M19 8.5a3.5 3.5 0 0 1 0 7" />
-              </svg>
-            </span>
-            無料診断で見るポイント
-          </p>
-          <ul>
-            <li class="signal-target">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <circle cx="12" cy="12" r="8" />
-                <circle cx="12" cy="12" r="3" />
-                <path d="M12 2v3M22 12h-3M12 22v-3M2 12h3" />
-              </svg>
-              <span>誰に向けているか</span>
-            </li>
-            <li class="signal-copy">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M9 18h6" />
-                <path d="M10 22h4" />
-                <path d="M8.4 14.6A6 6 0 1 1 15.6 14c-.8.6-1.2 1.5-1.4 2.5H9.8c-.2-.8-.6-1.4-1.4-1.9Z" />
-                <path d="M4 4 2.8 2.8M20 4l1.2-1.2M12 2V0.5" />
-              </svg>
-              <span>最初の見出し</span>
-            </li>
-            <li class="signal-benefit">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M20.2 5.8a5.2 5.2 0 0 0-7.4 0L12 6.6l-.8-.8a5.2 5.2 0 0 0-7.4 7.4L12 21.4l8.2-8.2a5.2 5.2 0 0 0 0-7.4Z" />
-              </svg>
-              <span>欲しくなる理由</span>
-            </li>
-            <li class="signal-offer">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M4 17c4.5 0 6.5-2 8-5l1-2" />
-                <path d="M14 5h6v6" />
-                <path d="m13 10 7-7" />
-                <path d="M4 17h5M4 21h3" />
-              </svg>
-              <span>申し込む理由</span>
-            </li>
-            <li class="signal-contact">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" />
-                <path d="M8 10h8M8 14h5" />
-              </svg>
-              <span>問い合わせ導線</span>
-            </li>
-          </ul>
+      <section class="section streamlined-problems" aria-labelledby="problems-title">
+        <div class="section-inner">
+          <div class="section-heading">
+            <p class="eyebrow">よくある悩みと原因</p>
+            <h2 id="problems-title">反応が出ない理由は、<em>デザインだけ</em>ではありません。</h2>
+            <p>読み手が「自分のことだ」と感じ、迷わず問い合わせられるまでの流れを整える必要があります。</p>
+          </div>
+          <div class="streamlined-card-grid">
+            <article><span>01</span><h3>チラシを配っても問い合わせが来ない</h3><p>見出しや訴求が、必要な人に届いていない可能性があります。</p></article>
+            <article><span>02</span><h3>誰に向けたチラシなのかが曖昧</h3><p>対象が広すぎると、読み手は自分ごとにしにくくなります。</p></article>
+            <article><span>03</span><h3>選ばれる理由や今申し込む理由が弱い</h3><p>特徴だけでは、問い合わせを後回しにされてしまいます。</p></article>
+            <article><span>04</span><h3>問い合わせ導線が分かりにくい</h3><p>電話・LINE・Webの入口が見つからないと、興味があっても止まります。</p></article>
+          </div>
         </div>
       </section>
 
@@ -497,11 +458,11 @@
                   <p>必要な方にのみ、制作や改善のご提案をさせていただきます。</p>
                 </div>
               </div>
-              <button class="diagnosis-cta js-open-chat" type="button">
+              <button class="diagnosis-cta js-open-chat" type="button" data-chat-route="free_diagnosis">
                 <span aria-hidden="true">
                   <svg viewBox="0 0 24 24" focusable="false"><path d="M4 6h16v12H4V6Z" /><path d="m5 7 7 6 7-6" /></svg>
                 </span>
-                今のチラシを無料診断する
+                今のチラシを送って無料診断する
                 <i aria-hidden="true">›</i>
               </button>
               <ul class="diagnosis-benefits" aria-label="無料診断の安心ポイント">
@@ -1282,13 +1243,13 @@
             </div>
             <div class="pricing-row" role="row">
               <span role="cell" class="plan-cell"><i class="plan-icon plan-light" aria-hidden="true"></i><strong>A4片面</strong></span>
-              <span role="cell"><b>33,000円</b><small>税込目安</small></span>
+              <span role="cell"><b>33,000円</b><small>税込</small></span>
               <span role="cell">印刷用PDF</span>
               <span role="cell">まず1枚で訴求・導線を整えたい方</span>
             </div>
             <div class="pricing-row recommended-row" role="row">
               <span role="cell" class="plan-cell"><i class="plan-icon plan-standard" aria-hidden="true"></i><strong>A4両面</strong><em>おすすめ</em></span>
-              <span role="cell"><b>55,000円</b><small>税込目安</small></span>
+              <span role="cell"><b>55,000円</b><small>税込</small></span>
               <span role="cell">印刷用PDF</span>
               <span role="cell">情報量が多く、信頼材料や詳細まで伝えたい方</span>
             </div>
@@ -1300,11 +1261,11 @@
             <span>紙面構成・デザイン制作</span>
             <span>問い合わせ導線設計</span>
             <span>修正2回</span>
-            <span>印刷費は別途</span>
+            <span>印刷費・写真撮影・ロゴ制作・編集可能な元データは別料金</span>
           </div>
           <div class="pricing-actions">
-            <button class="primary-button js-open-chat" type="button">チラシを無料診断してもらう</button>
-            <a class="secondary-button" href="production.html">制作サービスを見る</a>
+            <button class="primary-button js-open-chat" type="button" data-chat-route="free_diagnosis">今のチラシを送って無料診断する</button>
+            <a class="secondary-button" href="production.html">制作サービスの詳細を見る</a>
           </div>
         </div>
       </section>
@@ -1320,24 +1281,24 @@
               <span class="flow-num">01</span>
               <img src="assets/flow/flow-send.png" alt="" loading="lazy" decoding="async" />
               <div>
-                <strong>無料診断を申し込む</strong>
-                <p>まずは現在のチラシを<br />お送りください。</p>
+                <strong>目的と悩みを選び、<br />チラシを送る</strong>
+                <p>画像またはPDFを<br />アップロードします。</p>
               </div>
             </li>
             <li class="flow-card flow-orange">
               <span class="flow-num">02</span>
               <img src="assets/flow/flow-input.png" alt="" loading="lazy" decoding="async" />
               <div>
-                <strong>必要情報を入力</strong>
-                <p>お名前、メール、目的、<br />今の悩みを<br />確認します。</p>
+                <strong>1〜3営業日以内に<br />レポートを受け取る</strong>
+                <p>A4診断レポートを<br />メールでお送りします。</p>
               </div>
             </li>
             <li class="flow-card flow-green">
               <span class="flow-num">03</span>
               <img src="assets/flow/flow-report.png" alt="" loading="lazy" decoding="async" />
               <div>
-                <strong>A4診断レポートを<br />受け取る</strong>
-                <p>7つのAI仙人の分析フレームで<br />改善ポイントを整理します。</p>
+                <strong>必要な方だけ<br />制作を相談する</strong>
+                <p>改善方針をもとに<br />反応設計型チラシ制作へ進めます。</p>
               </div>
             </li>
             <li class="flow-card flow-blue">
@@ -1373,6 +1334,16 @@
         </div>
       </section>
 
+      <section class="section owner-section" aria-labelledby="owner-title">
+        <div class="section-inner owner-card">
+          <div>
+            <p class="eyebrow">診断・制作を担当する人</p>
+            <h2 id="owner-title">AI任せではなく、事業内容を確認したうえで診断します。</h2>
+          </div>
+          <p>無料診断から制作まで、株式会社En-So Bloom代表の仁谷亮太が担当します。見た目を整えるだけではなく、誰に・何を・どのように伝えれば、問い合わせや予約につながりやすいかを考え、ターゲット、言葉、構成、オファー、問い合わせ導線まで確認します。</p>
+        </div>
+      </section>
+
       <section id="faq" class="section faq-section" aria-labelledby="faq-title">
         <div class="section-inner">
           <div class="faq-hero">
@@ -1398,32 +1369,24 @@
               <p>診断後、ご希望の方には制作内容と料金をご案内します。無理な営業は行いません。</p>
             </details>
             <details>
-              <summary>チャットではなく直接問い合わせできますか？</summary>
-              <p>はい。<a href="contact.html">お問い合わせフォーム</a>から、会社・個人事業主・店舗のご相談内容を送っていただけます。</p>
-            </details>
-            <details>
-              <summary>送ったチラシや個人情報はどう扱われますか？</summary>
-              <p>無料診断レポートの作成・送付、お問い合わせへの返信、サービス品質の改善に必要な範囲で利用します。詳しくは<a href="privacy.html">プライバシーポリシー</a>をご確認ください。</p>
-            </details>
-            <details>
               <summary>AIが自動で診断するのですか？</summary>
-              <p>完全自動の診断ではありません。7つのAI仙人の分析フレームを活用し、担当者が内容を確認してレポートにまとめます。</p>
+              <p>完全自動の診断ではありません。7つのAI仙人の分析フレームを活用し、株式会社En-So Bloom代表の仁谷亮太が内容を確認してレポートにまとめます。</p>
+            </details>
+            <details>
+              <summary>どのファイル形式に対応していますか？</summary>
+              <p>jpg、jpeg、png、pdfに対応しています。10MB以内で、チラシの内容が読める状態のファイルをお送りください。</p>
+            </details>
+            <details>
+              <summary>配布前・古いチラシでも診断できますか？</summary>
+              <p>はい。配布前なら印刷前に改善点を確認でき、古いチラシなら現在のターゲットや訴求とのズレを見直せます。</p>
             </details>
             <details>
               <summary>チラシがまだなくても依頼できますか？</summary>
               <p>はい。新規制作も可能です。業種・目的・ターゲット・掲載したい内容を伺いながら制作します。</p>
             </details>
             <details>
-              <summary>古いチラシでも診断できますか？</summary>
-              <p>はい。以前から使っているチラシほど、今のターゲットや訴求とズレている可能性があります。</p>
-            </details>
-            <details>
-              <summary>印刷もお願いできますか？</summary>
-              <p>基本は印刷用PDF納品です。印刷費、写真撮影、ロゴ制作、編集可能な元データは別料金です。</p>
-            </details>
-            <details>
-              <summary>制作料金はいくらですか？</summary>
-              <p>反応設計型チラシ制作は、A4片面33,000円、A4両面55,000円が目安です。無料診断後、必要な方だけご案内します。</p>
+              <summary>制作料金には何が含まれますか？</summary>
+              <p>事前診断、ターゲット・強みの整理、キャッチコピー、紙面構成、デザイン、問い合わせ導線設計、修正2回、印刷用PDF納品を含みます。印刷費、写真撮影、ロゴ制作、編集可能な元データは別料金です。</p>
             </details>
             <details>
               <summary>必ず反応が出ますか？</summary>
@@ -1440,9 +1403,9 @@
               <p class="final-cta-kicker"><span aria-hidden="true"></span>チラシを作り直す前に</p>
               <h2 id="final-cta-title">まず“<em>反応が出ない原因</em>”を<br />見つけませんか？</h2>
               <p>今のチラシを送るだけで、改善ポイントをA4レポートで無料診断します。<br />診断だけのご利用でも大丈夫です。</p>
-              <button class="final-cta-button js-open-chat" type="button">
+              <button class="final-cta-button js-open-chat" type="button" data-chat-route="free_diagnosis">
                 <span class="final-cta-button-icon" aria-hidden="true"></span>
-                <span>チラシを無料診断してもらう</span>
+                <span>今のチラシを送って無料診断する</span>
                 <span class="final-cta-button-arrow" aria-hidden="true">›</span>
               </button>
             </div>
@@ -1462,16 +1425,17 @@
         </a>
         <nav aria-label="フッターナビゲーション">
           <a href="contact.html">お問い合わせ</a>
-          <a href="portal.html">制作依頼ログイン</a>
+          <a href="portal.html">ご契約者さま専用ページ</a>
           <a href="company.html">会社概要</a>
           <a href="privacy.html">プライバシーポリシー</a>
+          <a href="partner.html">印刷・折込・看板会社の方へ</a>
         </nav>
-        <small>© 無料チラシ診断</small>
+        <small>© 株式会社En-So Bloom</small>
       </div>
     </footer>
 
     <aside class="chat-shell" aria-label="チラシ・販促受付チャット" data-open="false">
-      <button class="chat-launcher js-open-chat" type="button" aria-label="受付チャットを開く" data-cta data-conversion>
+      <button class="chat-launcher js-open-chat" type="button" aria-label="受付チャットを開く" data-cta>
         <span class="chat-launcher-icon" aria-hidden="true"><img src="assets/logo-mark.png" alt="" /></span>
         <span class="chat-launcher-text">
           <strong>無料チラシ診断</strong>
@@ -1497,7 +1461,7 @@
     </aside>
 
     <script src="app-config.js?v=20260629-supabase-leads1"></script>
-    <script src="script.js?v=20260805-two-step1"></script>
+    <script src="script.js?v=20260806-publish1"></script>
     <script src="https://lp-analysis-tool.vercel.app/tracking.js" data-site-id="site_63faadce5e66f71d" data-endpoint="https://lp-analysis-tool.vercel.app/api/mvp/track"></script>
   </body>
 </html>

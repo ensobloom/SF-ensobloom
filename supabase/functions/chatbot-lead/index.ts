@@ -158,7 +158,11 @@ function validateDiagnosisPayload(payload: Record<string, unknown>, flyerFile: F
     .filter(([key]) => !hasText(payload[key]))
     .map(([, label]) => label);
 
-  if (!hasDiagnosisFile(flyerFile)) missing.unshift("チラシ画像/PDF");
+  if (!hasDiagnosisFile(flyerFile)) {
+    missing.unshift("チラシ画像/PDF");
+  } else if (!isValidDiagnosisFile(flyerFile)) {
+    missing.unshift("jpg、jpeg、png、pdf形式・10MB以内のチラシ画像/PDF");
+  }
   if (!hasText(payload.issueText) && !hasText(payload.initialConcern)) missing.push("現在の悩み");
   if (hasText(payload.email) && !isValidEmail(payload.email)) missing.push("有効なメールアドレス");
   if (hasText(payload.phone) && !isNoPhoneText(payload.phone) && !isValidPhone(payload.phone)) missing.push("有効な電話番号");
@@ -221,6 +225,12 @@ function hasDiagnosisFile(value: FormDataEntryValue | null) {
   return value instanceof File && value.size > 0;
 }
 
+function isValidDiagnosisFile(value: FormDataEntryValue | null) {
+  if (!(value instanceof File)) return false;
+  if (value.size > 10 * 1024 * 1024) return false;
+  return /\.(jpe?g|png|pdf)$/i.test(value.name);
+}
+
 function createSafeStorageFileName(name: string) {
   const fallback = "flyer-file";
   const dotIndex = name.lastIndexOf(".");
@@ -247,7 +257,7 @@ function isValidEmail(value: unknown) {
 
 function isValidPhone(value: unknown) {
   const text = String(value || "").trim();
-  if (!text || /^(なし|無し|ない|無い|メールのみ|不要)$/i.test(text)) return false;
+  if (!text || /^(未入力|なし|無し|ない|無い|メールのみ|不要)$/i.test(text)) return false;
   const normalized = text.replace(/[０-９]/g, (char) =>
     String.fromCharCode(char.charCodeAt(0) - 0xfee0)
   );
@@ -255,7 +265,7 @@ function isValidPhone(value: unknown) {
 }
 
 function isNoPhoneText(value: unknown) {
-  return /^(なし|無し|ない|無い|メールのみ|不要)$/i.test(String(value || "").trim());
+  return /^(未入力|なし|無し|ない|無い|メールのみ|不要)$/i.test(String(value || "").trim());
 }
 
 function hasConsent(value: unknown) {

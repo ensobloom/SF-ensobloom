@@ -412,7 +412,7 @@ if (chatShell) {
 
 document.querySelectorAll(".js-open-chat").forEach((button) => {
   if (chatShell) {
-    button.addEventListener("click", openChat);
+    button.addEventListener("click", () => openChat({ route: button.dataset.chatRoute || "" }));
   }
 });
 
@@ -441,6 +441,11 @@ if (chatForm && chatInput) {
 
 if (quickContactForm) {
   quickContactForm.addEventListener("submit", handleQuickContact);
+  const topicFromQuery = new URLSearchParams(window.location.search).get("topic");
+  const topicField = quickContactForm.elements.namedItem("topic");
+  if (topicFromQuery === "partner" && topicField instanceof HTMLSelectElement) {
+    topicField.value = "業務提携";
+  }
 }
 
 if (portalApp) {
@@ -532,7 +537,7 @@ if (flyerFileInput) {
   });
 }
 
-function openChat() {
+function openChat(options = {}) {
   if (!chatShell || !chatInput) return;
   chatShell.dataset.open = "true";
   if (!state.started) {
@@ -621,7 +626,6 @@ function setActions(actions = []) {
     if (config.important) button.classList.add("important");
     if (shouldTrackChatAction(config)) {
       button.dataset.cta = "true";
-      button.dataset.conversion = "true";
     }
     button.addEventListener("click", () => {
       if (config.kind === "file") {
@@ -1079,7 +1083,7 @@ function extractPhone(text) {
 
 function isValidPhone(text) {
   const value = String(text || "").trim();
-  if (!value || /^(なし|無し|ない|無い|メールのみ|不要)$/i.test(value)) return false;
+  if (!value || /^(未入力|なし|無し|ない|無い|メールのみ|不要)$/i.test(value)) return false;
   return extractPhone(value).replace(/\D/g, "").length >= 10;
 }
 
@@ -1321,7 +1325,7 @@ async function handlePortalLogin(event) {
 
   const loginEndpoint = getEndpoint("customerLogin");
   if (!loginEndpoint) {
-    setPortalLoginStatus("制作依頼ログインは本番認証APIの設定後に利用できます。", false);
+    setPortalLoginStatus("ご契約者さま専用ページは、本番認証APIの設定後に利用できます。", false);
     return;
   }
 
@@ -2503,7 +2507,7 @@ function getAdminEventLabel(event) {
     initial_concern: "最初の悩み",
     route_selected: "導線選択",
     file_selected: "ファイル選択",
-    lead_completed: "受付完了",
+    intake_saved: "受付完了",
     chat_restart: "やり直し"
   };
   return labels[event.type] || event.type || "イベント";
@@ -3352,7 +3356,7 @@ function logChatEvent(type, detail = {}) {
   }
 }
 
-function openChat() {
+function openChat(options = {}) {
   if (!chatShell || !chatInput) return;
   const wasOpen = chatShell.dataset.open === "true";
   if (!state.chatSessionId || !state.started) {
@@ -3368,6 +3372,11 @@ function openChat() {
     state.stage = "initial_concern";
     state.intakeType = "";
     state.data = createChatLeadData();
+    if (options.route === "free_diagnosis") {
+      startChatRoute("free_diagnosis");
+      window.setTimeout(() => chatInput.focus(), 120);
+      return;
+    }
     addMessage(
       "bot",
       "こんにちは。\n今のチラシについて、気になっていることを教えてください。\n\nたとえば、\n「チラシを配っても反応がない」\n「作り直す前に見てほしい」\n「制作料金を知りたい」\nなど、まだ整理できていなくても大丈夫です。"
@@ -3945,6 +3954,16 @@ function restartChat() {
   openChat();
 }
 
+// Links from the supporting public pages can take a visitor straight to the
+// required diagnosis route without first showing the general chat menu.
+if (chatShell && new URLSearchParams(window.location.search).get("start") === "free_diagnosis") {
+  window.addEventListener(
+    "pageshow",
+    () => window.setTimeout(() => openChat({ route: "free_diagnosis" }), 0),
+    { once: true }
+  );
+}
+
 // Chatbot v3: complete production-ready intake flow.
 const CHATBOT_V3_ROUTE_LABELS = {
   free_diagnosis: "無料チラシ診断",
@@ -3993,17 +4012,10 @@ const CHATBOT_V3_LABELS = {
 const CHATBOT_V3_FIELDS = {
   free_diagnosis: [
     {
-      name: "flyer_file",
-      label: "チラシ画像またはPDF",
-      question:
-        "まず、診断したいチラシ画像またはPDFを送ってください。\n表面だけでも大丈夫です。裏面がある場合は、両方送るとより確認しやすいです。",
-      action: { label: "チラシ画像/PDFを選択", kind: "file", important: true }
-    },
-    {
       name: "flyer_purpose",
       label: "チラシの目的",
       question:
-        "このチラシの目的を選んでください。",
+        "無料診断を始めます。\nまず、このチラシの目的を選んでください。",
       choices: [
         "問い合わせを増やしたい",
         "予約を増やしたい",
@@ -4030,16 +4042,17 @@ const CHATBOT_V3_FIELDS = {
       ]
     },
     {
-      name: "company_name",
-      label: "会社名・店舗名",
-      optional: true,
-      question: "診断レポートに記載するため、会社名または店舗名を教えてください。"
+      name: "flyer_file",
+      label: "チラシ画像またはPDF",
+      question:
+        "次に、診断したいチラシ画像またはPDFを送ってください。\n表面だけでも大丈夫です。裏面がある場合は、両方送るとより確認しやすいです。",
+      action: { label: "チラシ画像/PDFを選択", kind: "file", important: true }
     },
     {
       name: "customer_name",
       label: "お名前",
       question:
-        "ここから最後に、診断レポートをお送りするための連絡先を確認します。\nまず、担当者のお名前を教えてください。"
+        "診断レポートをお送りするため、担当者のお名前を教えてください。"
     },
     {
       name: "email",
@@ -4048,10 +4061,17 @@ const CHATBOT_V3_FIELDS = {
         "診断レポートを送るメールアドレスを教えてください。\n入力間違いがあるとレポートを届けられないため、確認できるアドレスを入力してください。"
     },
     {
+      name: "company_name",
+      label: "会社名・店舗名",
+      optional: true,
+      question: "会社名または店舗名があれば教えてください。入力しないで進むこともできます。"
+    },
+    {
       name: "phone",
       label: "電話番号",
+      optional: true,
       question:
-        "最後に、連絡先として電話番号を教えてください。\n診断内容の確認が必要な場合にだけ使用します。"
+        "電話番号があれば教えてください。診断内容の確認が必要な場合にだけ使用します。入力しないで進むこともできます。"
     }
   ],
   production_inquiry: [
@@ -4222,12 +4242,12 @@ const CHATBOT_V3_SUMMARY_FIELDS = {
   free_diagnosis: [
     "intake_type",
     "initial_concern",
-    "flyer_file",
     "flyer_purpose",
     "issue_text",
-    "company_name",
+    "flyer_file",
     "customer_name",
     "email",
+    "company_name",
     "phone"
   ],
   production_inquiry: [
@@ -4289,7 +4309,7 @@ function createChatLeadData() {
   };
 }
 
-function openChat() {
+function openChat(options = {}) {
   if (!chatShell || !chatInput) return;
   chatShell.dataset.open = "true";
   if (!state.started) {
@@ -4302,6 +4322,11 @@ function openChat() {
     state.uploadedFile = null;
     state.data = createChatLeadData();
     logChatEvent("chat_started", { stage: "initial_concern" });
+    if (options.route === "free_diagnosis") {
+      startChatRoute("free_diagnosis");
+      window.setTimeout(() => chatInput.focus(), 120);
+      return;
+    }
     addMessage(
       "bot",
       "こんにちは。\n今のチラシについて、気になっていることを教えてください。\n\nたとえば、\n「チラシを配っても反応がない」\n「作り直す前に見てほしい」\n「制作料金を知りたい」\nなど、まだ整理できていなくても大丈夫です。"
@@ -4326,10 +4351,7 @@ function setActions(actions = []) {
     button.type = "button";
     button.textContent = config.label;
     if (config.important) button.classList.add("important");
-    if (shouldTrackChatAction(config)) {
-      button.dataset.cta = "true";
-      button.dataset.conversion = "true";
-    }
+    if (shouldTrackChatAction(config)) button.dataset.cta = "true";
     button.addEventListener("click", () => {
       logChatEvent("button_click", {
         label: config.label,
@@ -4634,7 +4656,7 @@ function startChatRoute(route, options = {}) {
     if (route === "free_diagnosis") {
       addMessage(
         "bot",
-        "なるほど。\n今のチラシで反応や問い合わせにつながっているか不安ですね。\n\n無料診断では、7つの専門視点で反応を妨げている原因や改善ポイントを確認します。\n診断だけでも無料で利用できるので、まずは今のチラシ画像またはPDFを送ってください。"
+        "無料診断を受け付けます。\n7つの専門視点で、反応を妨げている原因と改善ポイントを確認します。\nまずはチラシの目的から教えてください。"
       );
     } else if (route === "production_inquiry") {
       addMessage("bot", getChatbotPricingMessage());
@@ -4915,7 +4937,7 @@ function askStage(stageName, options = {}) {
   } else if (stage.choices?.length) {
     setActions(stage.choices);
   } else if (stage.optional) {
-    setActions(["未定", "なし"]);
+    setActions([{ label: "入力しないで進む", value: "未入力" }]);
   } else {
     setActions([]);
   }
@@ -4933,7 +4955,7 @@ function repeatCurrentQuestion() {
   } else if (stage.choices?.length) {
     setActions(stage.choices);
   } else if (stage.optional) {
-    setActions(["未定", "なし"]);
+    setActions([{ label: "入力しないで進む", value: "未入力" }]);
   } else {
     setActions([]);
   }
@@ -5046,11 +5068,12 @@ async function completeApplication() {
 
   try {
     await submitChatLead(state.data);
-    logChatEvent("lead_completed", {
+    logChatEvent("intake_saved", {
       route: state.intakeType,
       routeLabel: CHATBOT_V3_ROUTE_LABELS[state.intakeType],
       stage: "complete"
     });
+    pushCompletionConversion(state.intakeType);
   } catch (error) {
     state.isSubmitting = false;
     state.errorMessage = error.message;
@@ -5098,6 +5121,21 @@ async function completeApplication() {
   ]);
 }
 
+function pushCompletionConversion(route) {
+  const eventName = {
+    free_diagnosis: "free_diagnosis_complete",
+    production_inquiry: "production_inquiry_complete",
+    promotion_consulting: "promotion_consulting_complete"
+  }[route];
+  if (!eventName) return;
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: eventName,
+    intake_type: route,
+    source: "chatbot"
+  });
+}
+
 function getFieldFromServerMissing(missing = []) {
   const labelsToFields = {
     "チラシ画像/PDF": "flyer_file",
@@ -5139,7 +5177,7 @@ function validateChatLead(data) {
       message: "受付後に連絡できる電話番号が必要です。\n内容確認が必要な場合にだけ使用しますので、連絡可能な番号を入力してください。"
     };
   }
-  if (state.intakeType === "free_diagnosis" && data.phone && !/^(なし|無し|ない|無い|メールのみ|不要)$/i.test(String(data.phone).trim()) && !isValidPhone(data.phone)) {
+  if (state.intakeType === "free_diagnosis" && data.phone && !/^(未入力|なし|無し|ない|無い|メールのみ|不要)$/i.test(String(data.phone).trim()) && !isValidPhone(data.phone)) {
     return {
       valid: false,
       field: "phone",
