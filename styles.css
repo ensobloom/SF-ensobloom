@@ -12623,3 +12623,130 @@ summary:focus-visible {
     line-height: 1.7;
   }
 }
+
+/* Representative photo placements keep the real person present without overtaking the diagnosis content. */
+.owner-card {
+  grid-template-columns: 190px minmax(0, 0.85fr) minmax(0, 1.1fr);
+  align-items: center;
+}
+
+.owner-photo {
+  width: 100%;
+  max-width: 190px;
+  margin: 0;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  background: #f3edf0;
+  border: 1px solid rgba(217, 67, 88, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 14px 30px rgba(67, 49, 55, 0.12);
+}
+
+.owner-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+}
+
+.owner-intro .eyebrow {
+  margin-top: 0;
+}
+
+.owner-name {
+  margin: 18px 0 0;
+  color: #6c4d56;
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.owner-name strong {
+  color: #30282c;
+  font-size: 1.08rem;
+}
+
+.owner-card > .owner-description {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 2;
+}
+
+.company-profile {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  padding: 0 0 24px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.company-profile img {
+  display: block;
+  width: 88px;
+  height: 112px;
+  object-fit: cover;
+  object-position: center 20%;
+  border: 1px solid rgba(217, 67, 88, 0.2);
+  border-radius: 6px;
+}
+
+.company-profile p,
+.company-profile strong,
+.company-profile span {
+  display: block;
+}
+
+.company-profile p {
+  margin: 0 0 4px;
+  color: #6c4d56;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.company-profile strong {
+  color: #30282c;
+  font-size: 1.34rem;
+  line-height: 1.4;
+}
+
+.company-profile span {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+@media (max-width: 760px) {
+  .owner-card {
+    grid-template-columns: 120px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .owner-photo {
+    max-width: 120px;
+  }
+
+  .owner-card > .owner-description {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .owner-card {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .owner-photo {
+    max-width: 152px;
+  }
+
+  .owner-card > .owner-description {
+    text-align: left;
+  }
+
+  .company-profile {
+    align-items: center;
+  }
+}
