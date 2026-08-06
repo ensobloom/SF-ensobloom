@@ -12537,3 +12537,89 @@ summary:focus-visible {
   outline: 3px solid #0b7d68;
   outline-offset: 3px;
 }
+
+/* Compact seven-view diagnosis cards for the refocused free-diagnosis LP. */
+#sages .sages-intro {
+  margin-bottom: 34px;
+}
+
+#sages .sages-intro-copy {
+  max-width: 760px;
+}
+
+#sages .sage-grid.sage-grid-compact {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+
+#sages .sage-grid.sage-grid-compact > article {
+  display: block;
+  min-height: 168px;
+  padding: 24px 20px 22px;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(216, 32, 49, 0.16);
+  border-radius: 8px;
+  box-shadow: 0 12px 28px rgba(117, 79, 88, 0.07);
+}
+
+#sages .sage-grid.sage-grid-compact > article:nth-child(n + 5) {
+  grid-column: span 1;
+}
+
+#sages .sage-grid.sage-grid-compact h3 {
+  margin: 0 0 12px;
+  color: #c92e43;
+  font-size: 1.35rem;
+  line-height: 1.35;
+}
+
+#sages .sage-grid.sage-grid-compact p {
+  margin: 0;
+  color: #443a3f;
+  font-size: 0.96rem;
+  font-weight: 500;
+  line-height: 1.75;
+}
+
+.pricing-panel .pricing-heading {
+  padding-right: 0;
+}
+
+.pricing-panel .pricing-heading h2 {
+  white-space: normal;
+}
+
+@media (max-width: 980px) {
+  #sages .sage-grid.sage-grid-compact {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  #sages .sages-intro {
+    margin-bottom: 24px;
+  }
+
+  #sages .sage-grid.sage-grid-compact {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  #sages .sage-grid.sage-grid-compact > article {
+    min-height: 0;
+    padding: 20px 18px;
+  }
+
+  #sages .sage-grid.sage-grid-compact h3 {
+    margin-bottom: 8px;
+    font-size: 1.2rem;
+  }
+
+  #sages .sage-grid.sage-grid-compact p {
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+}

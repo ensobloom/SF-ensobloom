@@ -16,9 +16,8 @@ Deno.serve(async (request) => {
     const payloadText = String(formData.get("payload") || "{}");
     const payload = JSON.parse(payloadText);
     const intakeType = String(payload.intakeType || "free_diagnosis");
-    const supabase = getServiceClient();
-    const id = crypto.randomUUID();
     const flyerFile = formData.get("flyerFile");
+    const dryRun = payload.dryRun === true || String(payload.dryRun || "").toLowerCase() === "true";
 
     let flyerFilePath = "";
     let flyerFileName = String(payload.flyerFileName || "");
@@ -38,8 +37,32 @@ Deno.serve(async (request) => {
           400
         );
       }
+    } else {
+      const contactValidation = validateContactPayload(payload, intakeType);
+      if (!contactValidation.valid) {
+        return jsonResponse(
+          {
+            ok: false,
+            error: "required_fields_missing",
+            message: contactValidation.message,
+            missing: contactValidation.missing
+          },
+          400
+        );
+      }
     }
 
+    // Dry-run follows the production validators but deliberately stops before any side effect.
+    if (dryRun) {
+      return jsonResponse({
+        ok: true,
+        dryRun: true,
+        phoneOptional: intakeType === "free_diagnosis"
+      });
+    }
+
+    const supabase = getServiceClient();
+    const id = crypto.randomUUID();
     if (flyerFile instanceof File && flyerFile.size > 0) {
       flyerFileName = flyerFile.name;
       flyerFileType = flyerFile.type;
@@ -99,19 +122,6 @@ Deno.serve(async (request) => {
         notifySafely(() => sendDiagnosisAutoReply(row))
       ]);
       return jsonResponse({ ok: true, id, type: "diagnosis" });
-    }
-
-    const contactValidation = validateContactPayload(payload, intakeType);
-    if (!contactValidation.valid) {
-      return jsonResponse(
-        {
-          ok: false,
-          error: "required_fields_missing",
-          message: contactValidation.message,
-          missing: contactValidation.missing
-        },
-        400
-      );
     }
 
     const row = {
